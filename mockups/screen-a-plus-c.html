@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>服装アドバイス 画面案（A＋C）</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif; background:#f3f1ec; color:#1f2328; padding:32px 24px 64px; }
+  h1 { font-size:26px; margin-bottom:6px; }
+  .lead { color:#57606a; margin-bottom:28px; font-size:15px; line-height:1.8; }
+  .layout { display:grid; grid-template-columns: 340px 1fr; gap:32px; align-items:start; }
+  .spec { background:#fff; border:1px solid #d0d7de; border-radius:16px; padding:24px; }
+  .spec h2 { font-size:18px; margin:0 0 10px; }
+  .spec h2:not(:first-child) { margin-top:22px; }
+  .spec ol, .spec ul { padding-left:1.3em; font-size:14px; line-height:1.9; }
+  .phones { display:flex; gap:28px; flex-wrap:wrap; }
+  .cap { font-size:14px; color:#57606a; margin-bottom:8px; font-weight:bold; text-align:center; }
+  .phone { width:330px; height:680px; border-radius:36px; border:10px solid #222; overflow:hidden; position:relative; }
+  .scr { height:100%; overflow:hidden; padding:20px 18px; }
+  .day { background:linear-gradient(#fff7e0,#fff 45%); color:#1f2328; }
+  .night { background:linear-gradient(#1b2340,#12172b); color:#f2f4f8; }
+  .muted { color:#57606a; } .night .muted { color:#c3cadb; }
+  .top { display:flex; justify-content:space-between; font-size:15px; margin-bottom:12px; }
+  .label { font-size:16px; font-weight:bold; }
+  .big { font-size:29px; font-weight:800; line-height:1.35; margin:6px 0 12px; }
+  .coord { display:flex; justify-content:center; gap:10px; margin-bottom:12px; }
+  .item { width:88px; border-radius:14px; text-align:center; padding:8px 4px; font-size:40px; }
+  .item small { display:block; font-size:12px; margin-top:2px; }
+  .day .item { background:#fff; border:1px solid #e6dcc4; }
+  .night .item { background:#242d4b; }
+  .tags { display:flex; gap:8px; margin-bottom:12px; }
+  .tags div { flex:1; border-radius:12px; padding:6px; text-align:center; font-size:12px; }
+  .tags b { display:block; font-size:21px; }
+  .day .tags div { background:#fff; border:1px solid #eadfbf; }
+  .night .tags div { background:#26304f; }
+  .note { font-size:16px; line-height:1.7; border-radius:14px; padding:10px 13px; margin-bottom:12px; }
+  .day .note { background:#fff1c2; } .night .note { background:#3a3163; }
+  .btn { text-align:center; font-size:14px; border-radius:12px; padding:10px; border:2px dashed currentColor; opacity:.85; }
+  .sep { border-top:1px solid rgba(255,255,255,.25); margin:14px 0 10px; }
+  .credit { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-size:10px; opacity:.7; }
+  @media (max-width:1000px) { .layout { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<h1>服装アドバイス 画面案（A＋C 統合版）</h1>
+<p class="lead">A の「結論を大きく1行」を一番上に置き、その下に C の「コーデ見本」を並べます。<br>画像がまだない段階でも、結論の1行だけで用が足ります。</p>
+
+<div class="layout">
+  <div class="spec">
+    <h2>朝の画面（上から順に）</h2>
+    <ol>
+      <li><b>結論1行</b>（A）… 一番大きな文字</li>
+      <li><b>コーデ見本</b>（C）… 上着・トップス・ボトムスの画像</li>
+      <li>最高・最低気温、湿度</li>
+      <li>ひとこと理由と注意（雨・寒暖差）</li>
+      <li>🤖 自分の AI で着せ替え（AI を持つ人向け）</li>
+    </ol>
+    <h2>就寝前の画面</h2>
+    <ol>
+      <li><b>今夜の寝間着</b>の結論1行（最優先）</li>
+      <li>明日の結論1行＋コーデ見本</li>
+      <li>明日の気温と、今日との差</li>
+    </ol>
+    <h2>決めておきたいこと</h2>
+    <ul>
+      <li>夜の画面に切り替える時刻（仮: 18時）</li>
+      <li>画像がない服は絵文字と文字で代わりに表示</li>
+      <li>文字サイズの大小切り替えを付けるか</li>
+    </ul>
+  </div>
+
+  <div class="phones">
+    <div><div class="cap">☀ 朝 7:00</div>
+      <div class="phone"><div class="scr day">
+        <div class="top"><span>📍 ○○市</span><span class="muted">10月1日（木）</span></div>
+        <div class="label">今日の服装</div>
+        <div class="big">長袖に<br>うすい上着を1枚</div>
+        <div class="coord">
+          <div class="item">🧥<small>うすい上着</small></div>
+          <div class="item">👚<small>長袖</small></div>
+          <div class="item">👖<small>長ズボン</small></div>
+        </div>
+        <div class="tags"><div><span class="muted">最高</span><b>21℃</b></div><div><span class="muted">最低</span><b>13℃</b></div><div><span class="muted">湿度</span><b>60%</b></div></div>
+        <div class="note">朝晩は冷えます。☂ 午後から雨なので折りたたみ傘を</div>
+        <div class="btn">🤖 自分の AI で着せ替えてみる</div>
+      </div><div class="credit">天気データ: Open-Meteo</div></div></div>
+
+    <div><div class="cap">🌙 就寝前 22:00</div>
+      <div class="phone"><div class="scr night">
+        <div class="top"><span>📍 ○○市</span><span class="muted">明日 10月2日（金）</span></div>
+        <div class="label">今夜の寝間着</div>
+        <div class="big">長袖で寝てください</div>
+        <div class="note">明け方は <b>11℃</b> まで冷えます</div>
+        <div class="sep"></div>
+        <div class="label">明日の服装</div>
+        <div class="big" style="font-size:25px">セーターにコートを用意</div>
+        <div class="coord">
+          <div class="item">🧥<small>コート</small></div>
+          <div class="item">🧶<small>セーター</small></div>
+          <div class="item">👖<small>長ズボン</small></div>
+        </div>
+        <div class="tags"><div><span class="muted">最高</span><b>17℃</b></div><div><span class="muted">最低</span><b>11℃</b></div><div><span class="muted">今日より</span><b>-4℃</b></div></div>
+      </div><div class="credit">天気データ: Open-Meteo</div></div></div>
+  </div>
+</div>
+</body>
+</html>
