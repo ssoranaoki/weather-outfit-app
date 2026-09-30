@@ -18,8 +18,10 @@
 
       <label class="field-label" for="place-query">お住まいの地域</label>
       <p class="current-place" id="current-place"></p>
+      <button type="button" id="use-location" class="location-btn">📍 現在地を使う</button>
+      <p class="or">または住所で検索</p>
       <div class="search-row">
-        <input id="place-query" type="search" placeholder="例: 松本市" autocomplete="off">
+        <input id="place-query" type="search" placeholder="例: 養老町鷲巣" autocomplete="off">
         <button type="button" id="place-search">検索</button>
       </div>
       <ul id="place-results" class="place-results"></ul>
@@ -29,7 +31,7 @@
         <div id="sensitivity-choices" class="choices"></div>
       </fieldset>
 
-      <p class="privacy">設定はこの端末の中だけに保存されます。</p>
+      <p class="privacy">設定はこの端末の中だけに保存されます。現在地は約1kmの精度に丸めて保存します。<br>住所検索: 国土地理院・Open-Meteo</p>
       <button id="settings-close" class="primary" value="close">閉じる</button>
     </form>
   </dialog>

@@ -1,6 +1,6 @@
 // 画面の組み立て。判定は rules.js、データ取得は weather.js に任せる
 import { dayAdvice, pajamaAdvice, decideMode, addDays } from "./rules.js";
-import { fetchForecast, searchPlaces, daytimeRows, nightRows } from "./weather.js";
+import { fetchForecast, searchPlaces, currentPlace, daytimeRows, nightRows } from "./weather.js";
 import { loadSettings, saveSettings, SENSITIVITY_CHOICES } from "./settings.js";
 
 const app = document.getElementById("app");
@@ -134,6 +134,24 @@ async function doSearch() {
   }
 }
 
+async function useLocation() {
+  const btn = document.getElementById("use-location");
+  const list = document.getElementById("place-results");
+  btn.disabled = true;
+  btn.textContent = "📍 現在地を取得中…";
+  try {
+    settings = { ...settings, place: await currentPlace() };
+    saveSettings(settings);
+    openSettings();
+  } catch (e) {
+    list.innerHTML = `<li>${esc(e.message)}</li>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📍 現在地を使う";
+  }
+}
+
+document.getElementById("use-location").addEventListener("click", useLocation);
 document.getElementById("place-search").addEventListener("click", doSearch);
 document.getElementById("place-query").addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
