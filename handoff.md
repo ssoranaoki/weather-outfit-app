@@ -11,10 +11,16 @@
   - 国土地理院の住所検索は長期提供の保証がなく、仕様が予告なく変わりうる。止まっても Open-Meteo と現在地で動く
   - 国土地理院の案内では、代わりに CSIS シンプルジオコーディングも候補
 
+- 公開先は GitHub Pages に決定。リポジトリ名 `weather-outfit-app`（公開）、URL は https://ssoranaoki.github.io/weather-outfit-app/
+- コミットのメールは noreply（75925354+ssoranaoki@users.noreply.github.com）に差し替え済み。未 push
+- ユーザーが MulmoClaude を認証情報付き（SSH エージェント転送＋gh 設定マウント）で再起動する予定
+
 ## 次にやること
-1. ユーザーがブラウザで表示確認（`?hour=7` 朝／`?hour=22` 就寝前）
-2. 家族で試してもらうための公開先を決める（静的ホスティング）
-3. 母親の感想で、ルールの数値（気温区分・寒がり補正）を調整する
+1. 再起動後、`gh auth status` と `ssh-add -l` で認証を確認する
+2. `gh repo create ssoranaoki/weather-outfit-app --public --source . --push` でリポジトリ作成と push
+3. GitHub Pages を有効化（main ブランチの `/`）。`gh api` で設定するか、Settings → Pages で行う
+4. 公開 URL をスマホで開き、表示と「現在地を使う」を確認する
+5. 母親の感想で、ルールの数値（気温区分・寒がり補正）を調整する
 
 ## 保留中の判断
 - 夜モードへの切り替え時刻（仮: 18 時）
