@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>きょうの服装</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main id="app" class="screen">
+    <p class="loading">読み込み中…</p>
+  </main>
+
+  <!-- 設定画面 -->
+  <dialog id="settings">
+    <form method="dialog" class="settings-body">
+      <h2>設定</h2>
+
+      <label class="field-label" for="place-query">お住まいの地域</label>
+      <p class="current-place" id="current-place"></p>
+      <div class="search-row">
+        <input id="place-query" type="search" placeholder="例: 松本市" autocomplete="off">
+        <button type="button" id="place-search">検索</button>
+      </div>
+      <ul id="place-results" class="place-results"></ul>
+
+      <fieldset>
+        <legend class="field-label">寒がり・暑がり</legend>
+        <div id="sensitivity-choices" class="choices"></div>
+      </fieldset>
+
+      <p class="privacy">設定はこの端末の中だけに保存されます。</p>
+      <button id="settings-close" class="primary" value="close">閉じる</button>
+    </form>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

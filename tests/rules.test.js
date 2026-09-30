@@ -18,6 +18,18 @@ test("寒暖差が大きい日: 長袖＋ジャケット、昼は脱いでOK", (
   assert.deepEqual(a.stats, { max: 21, min: 12, humidity: 50 });
 });
 
+test("表示値と判定値が一致する: 体感最低 15.6℃ は 16℃ としてうすい上着", () => {
+  const a = dayAdvice(dayHours(15.6, 22), 0);
+  assert.equal(a.stats.min, 16);
+  assert.equal(a.headline, "長袖にうすい上着を（1日着たままで）");
+});
+
+test("寝間着も表示値で判定する: 14.6℃ は 15℃ として長袖", () => {
+  const p = pajamaAdvice(night(14.6), [], 0);
+  assert.equal(p.min, 15);
+  assert.equal(p.headline, "長袖で寝てください");
+});
+
 test("暑い日: 上着なし", () => {
   const a = dayAdvice(dayHours(24, 30), 0);
   assert.equal(a.headline, "半袖1枚で過ごせます");

@@ -42,9 +42,10 @@ const WIDE_RANGE = 8; // これ以上の寒暖差で「昼は脱いでOK」
  * @param {number} sensitivity 寒がり度 -2〜+2
  */
 export function dayAdvice(hours, sensitivity) {
+  // 画面に出す値（四捨五入）と判定に使う値を揃える
   const temps = hours.map((h) => h.apparent);
-  const rawMax = Math.max(...temps);
-  const rawMin = Math.min(...temps);
+  const rawMax = Math.round(Math.max(...temps));
+  const rawMin = Math.round(Math.min(...temps));
   const max = adjustForSensitivity(rawMax, sensitivity);
   const min = adjustForSensitivity(rawMin, sensitivity);
 
@@ -99,7 +100,7 @@ const COLDER_THAN_LAST_NIGHT = 5;
  * @param {Array<{temp:number}>} lastNight 昨夜 22〜6 時（無ければ空配列）
  */
 export function pajamaAdvice(tonight, lastNight, sensitivity) {
-  const rawMin = Math.min(...tonight.map((h) => h.temp));
+  const rawMin = Math.round(Math.min(...tonight.map((h) => h.temp)));
   const min = adjustForSensitivity(rawMin, sensitivity);
   const band = pajamaBand(min);
 
