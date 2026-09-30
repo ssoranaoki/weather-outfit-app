@@ -10,6 +10,7 @@ AI native 設計（AI は利用者側に置く）。バイブコーディング�
 - `js/rules.js` 判定ルール（純粋関数。将来 MCP 窓口からも使う）
 - `js/weather.js` Open-Meteo 取得とキャッシュ
 - `js/settings.js` 端末内の設定（地域・寒がり度のみ）
+- `js/feedback.js` 「どうだった？」の記録と CSV 書き出し（端末内のみ）
 - `js/app.js` 画面の組み立て
 - `tests/` ルールのテスト（`npm test`）
 

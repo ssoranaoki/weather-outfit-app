@@ -31,7 +31,14 @@
         <div id="sensitivity-choices" class="choices"></div>
       </fieldset>
 
-      <p class="privacy">設定はこの端末の中だけに保存されます。現在地は約1kmの精度に丸めて保存します。<br>住所検索: 国土地理院・Open-Meteo</p>
+      <div class="export">
+        <span class="field-label">「どうだった？」の記録</span>
+        <p class="current-place" id="feedback-count"></p>
+        <button type="button" id="export-feedback">記録を送る（書き出し）</button>
+        <p class="export-status" id="export-status" role="status"></p>
+      </div>
+
+      <p class="privacy">設定と記録はこの端末の中だけに保存されます。現在地は約1kmの精度に丸めて保存します。<br>住所検索: 国土地理院・Open-Meteo</p>
       <button id="settings-close" class="primary" value="close">閉じる</button>
     </form>
   </dialog>

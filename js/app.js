@@ -2,10 +2,13 @@
 import { dayAdvice, pajamaAdvice, decideMode, addDays } from "./rules.js";
 import { fetchForecast, searchPlaces, currentPlace, daytimeRows, nightRows } from "./weather.js";
 import { loadSettings, saveSettings, SENSITIVITY_CHOICES } from "./settings.js";
+import { RATINGS, loadFeedback, saveFeedback, upsertRecord, findRecord, toCsv } from "./feedback.js";
 
 const app = document.getElementById("app");
 const dialog = document.getElementById("settings");
 let settings = loadSettings();
+// 表示中の「どうだった？」に対応する記録の中身（評価だけ未定）。kind ごとに 1 つ
+let pendingRecords = {};
 
 // 動作確認用: ?hour=22 のように付けると、その時刻に開いたものとして表示する
 function now() {
@@ -38,6 +41,41 @@ const topHtml = (dateText) => `
     <button class="gear" id="open-settings" aria-label="設定">⚙</button>
   </div>`;
 
+// ---- 「どうだった？」カード ----
+
+/** record: 評価以外が埋まった記録。表示用の質問文と一緒に渡す */
+function feedbackHtml(question, record) {
+  pendingRecords[record.kind] = record;
+  const saved = findRecord(loadFeedback(), record.date, record.kind);
+  const buttons = RATINGS.map(
+    (r) =>
+      `<button type="button" class="rate${saved?.rating === r.value ? " selected" : ""}" data-kind="${record.kind}" data-rating="${r.value}" aria-pressed="${saved?.rating === r.value}">
+        <span class="rate-icon">${r.icon}</span>${r.label}</button>`,
+  ).join("");
+  return `
+    <section class="feedback" aria-label="${esc(question)}">
+      <div class="label">${esc(question)}</div>
+      <p class="feedback-sub">${esc(record.headline)}</p>
+      <div class="rates">${buttons}</div>
+      <p class="feedback-done">${saved ? "記録しました。押し直すと変更できます" : "押すと、この端末の中だけに記録されます"}</p>
+    </section>`;
+}
+
+function onRate(e) {
+  const btn = e.target.closest("button.rate");
+  if (!btn) return;
+  const base = pendingRecords[btn.dataset.kind];
+  if (!base) return;
+  saveFeedback(upsertRecord(loadFeedback(), { ...base, rating: btn.dataset.rating, savedAt: new Date().toISOString() }));
+  const section = btn.closest(".feedback");
+  section.querySelectorAll("button.rate").forEach((b) => {
+    const on = b === btn;
+    b.classList.toggle("selected", on);
+    b.setAttribute("aria-pressed", String(on));
+  });
+  section.querySelector(".feedback-done").textContent = "記録しました。押し直すと変更できます";
+}
+
 const credit = `<p class="credit">天気データ: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>（CC BY 4.0）</p>`;
 
 function renderDay(rows, target) {
@@ -48,7 +86,29 @@ function renderDay(rows, target) {
     <div class="big">${esc(a.headline)}</div>
     ${itemsHtml(a.items)}
     ${statsHtml([["体感 最高", `${a.stats.max}℃`], ["体感 最低", `${a.stats.min}℃`], ["湿度", `${a.stats.humidity}%`]])}
-    ${notesHtml(a.notes)}`;
+    ${notesHtml(a.notes)}
+    ${lastNightFeedback(rows, target)}`;
+}
+
+// 朝の画面: 今朝までの夜（前日 22 時〜今朝 6 時）の寝間着を聞く
+function lastNightFeedback(rows, today) {
+  const night = nightRows(rows, today);
+  if (!night.length) return "";
+  const p = pajamaAdvice(night, [], settings.sensitivity);
+  return `<div class="sep"></div>${feedbackHtml("昨夜の寝間着はどうだった？", {
+    date: today, kind: "night", headline: p.headline, max: null, min: p.min, humidity: null, sensitivity: settings.sensitivity,
+  })}`;
+}
+
+// 夜の画面: 今日（明日の前日）の服装を聞く
+function todayFeedback(rows, tomorrow) {
+  const day = addDays(tomorrow, -1);
+  const hours = daytimeRows(rows, day);
+  if (!hours.length) return "";
+  const a = dayAdvice(hours, settings.sensitivity);
+  return `<div class="sep"></div>${feedbackHtml("今日の服装はどうだった？", {
+    date: day, kind: "day", headline: a.headline, max: a.stats.max, min: a.stats.min, humidity: a.stats.humidity, sensitivity: settings.sensitivity,
+  })}`;
 }
 
 function renderNight(rows, target) {
@@ -70,7 +130,8 @@ function renderNight(rows, target) {
     <div class="big sub">${esc(a.headline)}</div>
     ${itemsHtml(a.items)}
     ${statsHtml(cells)}
-    ${notesHtml(a.notes)}`;
+    ${notesHtml(a.notes)}
+    ${todayFeedback(rows, target)}`;
 }
 
 async function render() {
@@ -81,6 +142,7 @@ async function render() {
   }
   const { mode, target } = decideMode(now());
   document.body.className = mode;
+  pendingRecords = {};
   try {
     const rows = await fetchForecast(settings.place.latitude, settings.place.longitude);
     const html = mode === "day" ? renderDay(rows, target) : renderNight(rows, target);
@@ -102,7 +164,39 @@ function openSettings() {
       `<label><input type="radio" name="sensitivity" value="${c.value}" ${c.value === settings.sensitivity ? "checked" : ""}>${c.label}</label>`,
   ).join("");
   document.getElementById("place-results").innerHTML = "";
+  const count = loadFeedback().length;
+  document.getElementById("feedback-count").textContent = count ? `いま ${count} 件の記録があります` : "まだ記録はありません";
+  document.getElementById("export-feedback").disabled = count === 0;
+  document.getElementById("export-status").textContent = "";
   if (!dialog.open) dialog.showModal();
+}
+
+// 記録の書き出し: スマホは共有メニュー（LINE など）、使えなければクリップボード、最後はファイル保存
+async function exportFeedback() {
+  const status = document.getElementById("export-status");
+  const text = toCsv(loadFeedback());
+  const title = "きょうの服装 記録";
+  try {
+    if (navigator.share) {
+      await navigator.share({ title, text });
+      status.textContent = "共有しました";
+      return;
+    }
+  } catch (e) {
+    if (e.name === "AbortError") return; // 共有メニューを閉じただけ
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    status.textContent = "コピーしました。LINE やメールに貼り付けて送ってください";
+    return;
+  } catch {
+    /* クリップボードが使えない環境はファイル保存へ */
+  }
+  const url = URL.createObjectURL(new Blob(["﻿" + text], { type: "text/csv" })); // BOM 付きで Excel でも文字化けしない
+  const a = Object.assign(document.createElement("a"), { href: url, download: "outfit-feedback.csv" });
+  a.click();
+  URL.revokeObjectURL(url);
+  status.textContent = "ファイルに保存しました";
 }
 
 async function doSearch() {
@@ -151,6 +245,8 @@ async function useLocation() {
   }
 }
 
+app.addEventListener("click", onRate);
+document.getElementById("export-feedback").addEventListener("click", exportFeedback);
 document.getElementById("use-location").addEventListener("click", useLocation);
 document.getElementById("place-search").addEventListener("click", doSearch);
 document.getElementById("place-query").addEventListener("keydown", (e) => {
