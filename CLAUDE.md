@@ -13,6 +13,8 @@ AI native 設計（AI は利用者側に置く）。バイブコーディング�
 - `js/feedback.js` 「どうだった？」の記録と CSV 書き出し（端末内のみ）
 - `js/app.js` 画面の組み立て
 - `tests/` ルールのテスト（`npm test`）
+- `img/clothes/` 服カタログ画像（生成条件は同フォルダの README.md）
+- `tools/ui-smoke.mjs` ブラウザなしで画面の組み立てを確認するスクリプト
 
 ## 方針
 - 判定ロジックは `rules.js` に集約し、変更したら必ずテストを追加・実行する

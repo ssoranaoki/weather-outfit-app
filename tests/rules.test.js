@@ -1,6 +1,23 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dayAdvice, pajamaAdvice, decideMode, addDays } from "../js/rules.js";
+import { existsSync } from "node:fs";
+import { dayAdvice, pajamaAdvice, decideMode, addDays, CLOTHES } from "../js/rules.js";
+
+test("服カタログの全 id に画像ファイルがある", () => {
+  for (const id of Object.keys(CLOTHES)) {
+    assert.ok(existsSync(new URL(`../img/clothes/${id}.jpg`, import.meta.url)), `img/clothes/${id}.jpg がない`);
+    assert.equal(CLOTHES[id].id, id);
+  }
+});
+
+test("すべての気温帯で、出てくる服と寝間着が画像付き（id あり）", () => {
+  for (let t = -5; t <= 35; t++) {
+    const hours = Array.from({ length: 12 }, (_, i) => ({ hour: 7 + i, apparent: t, humidity: 50, precipProb: 0 }));
+    for (const item of dayAdvice(hours, 0).items) assert.ok(item.id, `${t}℃: ${item.label} に id がない`);
+    const p = pajamaAdvice(Array.from({ length: 9 }, () => ({ temp: t, humidity: 50 })), [], 0);
+    assert.ok(p.item?.id, `${t}℃: 寝間着に id がない`);
+  }
+});
 
 // 7〜18 時の 12 時間分を、最低→最高→少し下がる形で作る
 function dayHours(min, max, { humidity = 50, rainFrom = null, rainProb = 70 } = {}) {

@@ -50,10 +50,12 @@ body.night {
 
 .coord { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
 .item {
-  width: 92px; border-radius: 14px; text-align: center; padding: 8px 4px;
+  width: calc((100% - 20px) / 3); max-width: 120px; border-radius: 14px; text-align: center; padding: 6px 6px 8px;
   font-size: 40px; background: var(--card); border: 1px solid var(--card-line);
 }
-.item small { display: block; font-size: 13px; margin-top: 2px; }
+/* 服の画像は白背景の商品写真。夜の暗いカードの上でも白い台紙として見えるよう角を丸める */
+.item img { display: block; width: 100%; height: auto; aspect-ratio: 1; border-radius: 10px; background: #fff; }
+.item small { display: block; font-size: 13px; margin-top: 4px; }
 
 .stats { display: flex; gap: 8px; margin-bottom: 14px; }
 .stats div {

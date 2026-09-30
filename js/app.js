@@ -26,8 +26,14 @@ function formatDate(dateKey) {
   return `${m}月${d}日（${w}）`;
 }
 
+// 服の画像。読み込めなかったときは絵文字に差し替える（icon は rules.js の固定値なので埋め込んでも安全）
+const itemImg = (i) =>
+  i.id
+    ? `<img src="img/clothes/${i.id}.jpg" alt="" width="200" height="200" loading="lazy" onerror="this.replaceWith(document.createTextNode('${i.icon}'))">`
+    : i.icon;
+
 const itemsHtml = (items) =>
-  `<div class="coord">${items.map((i) => `<div class="item">${i.icon}<small>${esc(i.label)}</small></div>`).join("")}</div>`;
+  `<div class="coord">${items.map((i) => `<div class="item">${itemImg(i)}<small>${esc(i.label)}</small></div>`).join("")}</div>`;
 
 const notesHtml = (notes) => (notes.length ? `<ul class="notes">${notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : "");
 
@@ -123,7 +129,8 @@ function renderNight(rows, target) {
   return `
     ${topHtml(`明日 ${formatDate(target)}`)}
     <div class="label">今夜の寝間着</div>
-    <div class="big">${p.icon} ${esc(p.headline)}</div>
+    <div class="big">${esc(p.headline)}</div>
+    ${itemsHtml([p.item])}
     ${notesHtml([`明け方は ${p.min}℃ まで下がります`, ...p.notes])}
     <div class="sep"></div>
     <div class="label">明日の服装</div>

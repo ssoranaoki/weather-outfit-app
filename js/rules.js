@@ -17,21 +17,41 @@ export function adjustForSensitivity(temp, sensitivity) {
 
 // ---- 日中の服装 ----
 
+// 服カタログ。id は画像ファイル名（img/clothes/<id>.jpg）。icon は画像を読めなかったときの代わり
+export const CLOTHES = {
+  "top-short": { id: "top-short", label: "半袖", icon: "👕" },
+  "top-long": { id: "top-long", label: "長袖", icon: "👚" },
+  "top-sweater": { id: "top-sweater", label: "セーター", icon: "🧶" },
+  "top-thick-sweater": { id: "top-thick-sweater", label: "厚手のセーター", icon: "🧶" },
+  "bottom-light": { id: "bottom-light", label: "薄手のボトムス", icon: "🩳" },
+  "bottom-pants": { id: "bottom-pants", label: "長ズボン", icon: "👖" },
+  "bottom-thick": { id: "bottom-thick", label: "厚手のズボン", icon: "👖" },
+  "outer-light": { id: "outer-light", label: "うすい上着", icon: "🧥" },
+  "outer-jacket": { id: "outer-jacket", label: "ジャケット", icon: "🧥" },
+  "outer-coat": { id: "outer-coat", label: "コート", icon: "🧥" },
+  "outer-thick-coat": { id: "outer-thick-coat", label: "厚手のコート", icon: "🧥" },
+  "acc-winter": { id: "acc-winter", label: "手袋・マフラー", icon: "🧣" },
+  "pj-short": { id: "pj-short", label: "半袖の寝間着", icon: "👕" },
+  "pj-long": { id: "pj-long", label: "長袖の寝間着", icon: "👚" },
+  "pj-warm": { id: "pj-warm", label: "厚手の寝間着と靴下", icon: "🧦" },
+};
+const C = CLOTHES;
+
 // 中に着る服（時間帯の最高で決める）
 export function innerWear(maxTemp) {
-  if (maxTemp >= 25) return { top: { label: "半袖", icon: "👕" }, bottom: { label: "薄手のボトムス", icon: "🩳" } };
-  if (maxTemp >= 16) return { top: { label: "長袖", icon: "👚" }, bottom: { label: "長ズボン", icon: "👖" } };
-  if (maxTemp >= 8) return { top: { label: "セーター", icon: "🧶" }, bottom: { label: "長ズボン", icon: "👖" } };
-  return { top: { label: "厚手のセーター", icon: "🧶" }, bottom: { label: "厚手のズボン", icon: "👖" } };
+  if (maxTemp >= 25) return { top: C["top-short"], bottom: C["bottom-light"] };
+  if (maxTemp >= 16) return { top: C["top-long"], bottom: C["bottom-pants"] };
+  if (maxTemp >= 8) return { top: C["top-sweater"], bottom: C["bottom-pants"] };
+  return { top: C["top-thick-sweater"], bottom: C["bottom-thick"] };
 }
 
 // 上着（時間帯の最低で決める）。不要なら null
 export function outerWear(minTemp) {
   if (minTemp >= 20) return null;
-  if (minTemp >= 16) return { label: "うすい上着", icon: "🧥" };
-  if (minTemp >= 12) return { label: "ジャケット", icon: "🧥" };
-  if (minTemp >= 8) return { label: "コート", icon: "🧥" };
-  return { label: "厚手のコート", icon: "🧥", extra: { label: "手袋・マフラー", icon: "🧣" } };
+  if (minTemp >= 16) return C["outer-light"];
+  if (minTemp >= 12) return C["outer-jacket"];
+  if (minTemp >= 8) return C["outer-coat"];
+  return { ...C["outer-thick-coat"], extra: C["acc-winter"] };
 }
 
 const WIDE_RANGE = 8; // これ以上の寒暖差で「昼は脱いでOK」
@@ -85,11 +105,11 @@ export function dayAdvice(hours, sensitivity) {
 // ---- 寝間着 ----
 
 export function pajamaBand(minTemp) {
-  if (minTemp >= 25) return { headline: "半袖で寝てください", icon: "👕", ac: "タイマーが切れると暑くなります。弱めに朝までつけるのも手（熱中症に注意）" };
-  if (minTemp >= 20) return { headline: "半袖で寝てください", icon: "👕", ac: "冷えすぎに注意。タイマーは短めで" };
-  if (minTemp >= 15) return { headline: "長袖で寝てください", icon: "👚", ac: "冷暖房なしでも過ごしやすい夜です" };
-  if (minTemp >= 10) return { headline: "長袖に厚手の掛け布団で", icon: "🛌", ac: "暖房が切れた明け方に冷えます" };
-  return { headline: "厚手の長袖に靴下もはいて", icon: "🧦", ac: "暖房で乾燥しやすいので加湿を", mentionsDryness: true };
+  if (minTemp >= 25) return { headline: "半袖で寝てください", icon: "👕", item: C["pj-short"], ac: "タイマーが切れると暑くなります。弱めに朝までつけるのも手（熱中症に注意）" };
+  if (minTemp >= 20) return { headline: "半袖で寝てください", icon: "👕", item: C["pj-short"], ac: "冷えすぎに注意。タイマーは短めで" };
+  if (minTemp >= 15) return { headline: "長袖で寝てください", icon: "👚", item: C["pj-long"], ac: "冷暖房なしでも過ごしやすい夜です" };
+  if (minTemp >= 10) return { headline: "長袖に厚手の掛け布団で", icon: "🛌", item: C["pj-long"], ac: "暖房が切れた明け方に冷えます" };
+  return { headline: "厚手の長袖に靴下もはいて", icon: "🧦", item: C["pj-warm"], ac: "暖房で乾燥しやすいので加湿を", mentionsDryness: true };
 }
 
 const COLDER_THAN_LAST_NIGHT = 5;
@@ -117,7 +137,7 @@ export function pajamaAdvice(tonight, lastNight, sensitivity) {
   }
   if (min >= 20 && avgHumidity >= 80) notes.push("蒸し暑い夜です。汗を吸いやすい素材を");
 
-  return { headline: band.headline, icon: band.icon, notes, min: Math.round(rawMin) };
+  return { headline: band.headline, icon: band.icon, item: band.item, notes, min: Math.round(rawMin) };
 }
 
 // ---- モード判定 ----
