@@ -32,8 +32,25 @@ const itemImg = (i) =>
     ? `<img src="img/clothes/${i.id}.jpg" alt="" width="200" height="200" loading="lazy" onerror="this.replaceWith(document.createTextNode('${i.icon}'))">`
     : i.icon;
 
+// 服のカードはタップで浮き上がるボタン（もう一度タップで戻る。同時に浮くのは 1 枚だけ）
 const itemsHtml = (items) =>
-  `<div class="coord">${items.map((i) => `<div class="item">${itemImg(i)}<small>${esc(i.label)}</small></div>`).join("")}</div>`;
+  `<div class="coord">${items
+    .map((i) => `<button type="button" class="item" aria-pressed="false">${itemImg(i)}<small>${esc(i.label)}</small></button>`)
+    .join("")}</div>`;
+
+function onItemTap(e) {
+  const card = e.target.closest("button.item");
+  if (!card) return;
+  const lift = !card.classList.contains("lifted");
+  app.querySelectorAll("button.item.lifted").forEach((c) => {
+    c.classList.remove("lifted");
+    c.setAttribute("aria-pressed", "false");
+  });
+  if (lift) {
+    card.classList.add("lifted");
+    card.setAttribute("aria-pressed", "true");
+  }
+}
 
 const notesHtml = (notes) => (notes.length ? `<ul class="notes">${notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : "");
 
@@ -253,6 +270,7 @@ async function useLocation() {
 }
 
 app.addEventListener("click", onRate);
+app.addEventListener("click", onItemTap);
 document.getElementById("export-feedback").addEventListener("click", exportFeedback);
 document.getElementById("use-location").addEventListener("click", useLocation);
 document.getElementById("place-search").addEventListener("click", doSearch);

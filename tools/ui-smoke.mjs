@@ -44,13 +44,35 @@ const mkBtn = (rating) => ({
 const btns = ["hot", "ok", "cold"].map(mkBtn);
 const done = { textContent: "" };
 const section = { querySelectorAll: () => btns, querySelector: () => done };
-btns.forEach((b) => (b.closest = (s) => (s === ".feedback" ? section : b)));
+btns.forEach((b) => (b.closest = (s) => (s === ".feedback" ? section : s === "button.rate" ? b : null)));
 const click = (b) => handlers["app:click"].forEach((fn) => fn({ target: b }));
 
 click(btns[2]);
 click(btns[1]);
 const saved = JSON.parse(store.get("wo:feedback"));
 console.log(`評価: ${saved.length} 件 / ${saved[0].kind} = ${saved[0].rating}（寒かった→ちょうどよいに押し直し）`);
+
+// 服のカードのタップ（浮き上がる → 別のカードに入れ替わる → もう一度で戻る）
+console.log("服のカード(button.item):", (html.match(/<button type="button" class="item"/g) ?? []).length, "枚");
+const mkCard = (name) => {
+  const cls = new Set();
+  const card = {
+    name, attrs: {},
+    classList: { contains: (c) => cls.has(c), add: (c) => cls.add(c), remove: (c) => cls.delete(c) },
+    setAttribute(k, v) { this.attrs[k] = v; },
+  };
+  card.closest = (s) => (s === "button.item" ? card : null);
+  return card;
+};
+const cards = [mkCard("A"), mkCard("B")];
+els.app.querySelectorAll = () => cards.filter((c) => c.classList.contains("lifted"));
+const lifted = () => cards.filter((c) => c.classList.contains("lifted")).map((c) => c.name).join("") || "なし";
+click(cards[0]);
+const s1 = lifted();
+click(cards[1]);
+const s2 = lifted();
+click(cards[1]);
+console.log(`浮き上がり: Aをタップ→${s1} / Bをタップ→${s2} / Bをもう一度→${lifted()}（期待: A / B / なし）`);
 
 handlers["open-settings:click"]?.forEach((fn) => fn());
 for (const fn of handlers["export-feedback:click"]) await fn();
