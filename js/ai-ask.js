@@ -84,7 +84,8 @@ export function aiAskHtml({ mode, rows, target, savedAt, settings }) {
     <section class="ai-ask" aria-labelledby="ai-ask-title">
       <div class="label" id="ai-ask-title">🤖 自分の AI に聞く</div>
       <p class="ai-ask-sub">ChatGPT や Claude に送ると、同じ判定で答えてくれます。</p>
-      <textarea class="ai-prompt" readonly rows="8" aria-label="AI に送る文">${esc(currentPrompt)}</textarea>
+      <!-- 送る文は普段は隠す（ユーザーの要望）。クリップボードが使えない端末でだけ表示して手でコピーしてもらう -->
+      <textarea class="ai-prompt" readonly rows="8" aria-label="AI に送る文" hidden>${esc(currentPrompt)}</textarea>
       <div class="ai-actions">
         <button type="button" class="ai-btn" data-action="copy-prompt">📋 コピー</button>
         ${canShare ? `<button type="button" class="ai-btn" data-action="share-prompt">📤 AI アプリに送る</button>` : ""}
@@ -102,6 +103,7 @@ async function copyText(app, text) {
   } catch {
     // クリップボードが使えない環境: 文を選択状態にして、手でコピーしてもらう
     const ta = app.querySelector(".ai-prompt");
+    if (ta) ta.hidden = false;
     ta?.focus();
     ta?.select();
     return false;
@@ -115,7 +117,7 @@ async function onAction(app, e) {
   const say = (t) => status && (status.textContent = t);
 
   if (btn.dataset.action === "copy-prompt") {
-    say((await copyText(app, currentPrompt)) ? "コピーしました。AI のチャットに貼り付けてください" : "文を選択しました。長押しでコピーしてください");
+    say((await copyText(app, currentPrompt)) ? "コピーしました。AI のチャットに貼り付けてください" : "コピーできなかったので文を表示しました。長押しでコピーしてください");
     return;
   }
 
