@@ -99,22 +99,30 @@ function onRate(e) {
 // 端末内の設定（地域・寒がり度）を書き込んだプロンプトを、コピーまたは AI アプリへ共有で渡す
 let currentPrompt = "";
 
-function aiAskHtml(mode) {
+function aiAskHtml(mode, rows, target, savedAt) {
   const label = SENSITIVITY_CHOICES.find((c) => c.value === settings.sensitivity)?.label ?? "ふつう";
-  currentPrompt = buildAiPrompt({ place: settings.place, sensitivityLabel: label, mode });
+  // アプリが取得済みの天気をそのまま渡す（AI は Open-Meteo を自分では取得できないため）
+  const weather = {
+    fetchedAt: new Date(savedAt),
+    target,
+    day: daytimeRows(rows, target),
+    night: mode === "night" ? nightRows(rows, target) : [],
+    lastNight: mode === "night" ? nightRows(rows, addDays(target, -1)) : [],
+  };
+  currentPrompt = buildAiPrompt({ place: settings.place, sensitivityLabel: label, mode, weather });
   const canShare = typeof navigator.share === "function";
   return `
     <div class="sep"></div>
     <section class="ai-ask" aria-labelledby="ai-ask-title">
       <div class="label" id="ai-ask-title">🤖 自分の AI に聞く</div>
       <p class="ai-ask-sub">ChatGPT や Claude に貼り付けると、同じ判定で答えてくれます。着せ替えもできる AI なら、続けて全身写真を送ってください（写真はこのアプリには送られません）。</p>
-      <textarea class="ai-prompt" readonly rows="5" aria-label="AI に送る文">${esc(currentPrompt)}</textarea>
+      <textarea class="ai-prompt" readonly rows="8" aria-label="AI に送る文">${esc(currentPrompt)}</textarea>
       <div class="ai-actions">
         <button type="button" class="ai-btn" data-action="copy-prompt">📋 コピー</button>
         ${canShare ? `<button type="button" class="ai-btn" data-action="share-prompt">📤 AI アプリに送る</button>` : ""}
       </div>
       <p class="ai-status" role="status"></p>
-      <p class="ai-note">地域名と寒がり度が文に入ります。</p>
+      <p class="ai-note">地域名・寒がり度・天気データが文に入ります。</p>
     </section>`;
 }
 
@@ -223,7 +231,7 @@ async function render() {
     // 保存が古すぎて対象日の予報を含まない（何日も電波がなかった等）ときは、出せる情報がない
     if (!daytimeRows(rows, target).length) throw new Error("最新の天気を取得できませんでした");
     const html = mode === "day" ? renderDay(rows, target) : renderNight(rows, target);
-    app.innerHTML = (stale ? staleHtml(savedAt) : "") + html + aiAskHtml(mode) + credit;
+    app.innerHTML = (stale ? staleHtml(savedAt) : "") + html + aiAskHtml(mode, rows, target, savedAt) + credit;
   } catch (e) {
     app.innerHTML = `<p class="error">${esc(e.message)}<br>電波の良いところで開き直してください。</p>`;
   }

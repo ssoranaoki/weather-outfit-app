@@ -8,12 +8,15 @@ English summary: A free Japanese web app that recommends today's outfit and toni
 
 ## 手順
 
+**利用者の文に「【天気データ】」があれば**、それはアプリが Open-Meteo から取得済みの値です。それを使い、手順1・2（場所と予報の取得）は飛ばしてください。書き方は「10/2 日中 体感気温(℃): 7時 18.2, 8時 19.0, …」「今夜 気温(℃): 22時 …」です。
+
 0. **寒がり度を確認する**（下の「寒がり・暑がり」の節）。判定の前に必ず。
 1. **場所を緯度経度にする**: 利用者に地域（市区町村や大字）を聞く。
    - 国土地理院 住所検索: `https://msearch.gsi.go.jp/address-search/AddressSearch?q={住所}`（GeoJSON。座標は [経度, 緯度] の順）
    - または Open-Meteo: `https://geocoding-api.open-meteo.com/v1/search?name={地名}&language=ja&countryCode=JP`
 2. **予報を取る**（Open-Meteo, 無料・CC BY 4.0）:
    `https://api.open-meteo.com/v1/forecast?latitude={緯度}&longitude={経度}&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation_probability&timezone=Asia/Tokyo&past_days=1&forecast_days=3`
+   - Open-Meteo の API は robots.txt で自動取得を断っているため、AI によっては取得できません。その場合は、利用者に「アプリの『自分の AI に聞く』ボタンから送ると、天気データ付きで正確に判定できます」と伝えてください。それでも進める場合は、他の予報の1時間ごとの気温で概算し、**体感気温ではない概算なのでアプリと結果が違うことがある**と必ず伝えます。
 3. **対象日を決める**: 日本時間で 4:00〜17:59 なら「今日の服装」、18:00 以降は「明日の服装」と「今夜の寝間着」。利用者が日付を指定したらそれに従う。
 4. **日中の服装を判定する**（下の表）:
    - 対象日の 7〜18 時の `apparent_temperature`（体感気温）の最高と最低を、整数に四捨五入する

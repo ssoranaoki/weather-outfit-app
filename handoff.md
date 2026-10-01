@@ -38,6 +38,11 @@
   - 対策: no-cache で毎回再確認、画像は stale-while-revalidate、updateViaCache: none、新版に切り替わったら 1 回だけ自動で読み直す
   - 裏で開いたままのアプリは、画面に戻ったら表示を作り直す（朝夜の切り替えが古いまま残らない）
 
+- claude.ai で Open-Meteo に接続できなかった原因（公式ドキュメントと実測で確認）
+  - api.open-meteo.com の robots.txt が全面 Disallow。Claude の web fetch は robots.txt に従う
+  - Claude の web fetch は会話に出た URL しか取れず、結果を自前でキャッシュする（Pages の 404 が残った理由とみられる）
+  - 対策: 「自分の AI に聞く」プロンプトに、アプリが取得済みの天気データ（日中の体感気温・湿度・降水確率、今夜の気温・湿度、昨夜の最低）を書き込む。説明書の URL は raw のみ
+
 ## 次にやること
 0. ユーザーが Android でホーム画面追加とオフライン表示を確認 → OK なら母親の iPhone に追加してもらう
 1. 母親に 1〜2 週間使ってもらい、記録を送ってもらう
