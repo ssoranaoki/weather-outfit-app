@@ -16,7 +16,8 @@ const el = (id) =>
   });
 globalThis.document = { getElementById: el, body: { className: "" }, createElement: () => ({ click() {} }), addEventListener() {}, querySelector: () => null, visibilityState: "visible" };
 let shared = null;
-Object.defineProperty(globalThis, "navigator", { value: { share: async (d) => { shared = d; } }, configurable: true });
+let copied = null;
+Object.defineProperty(globalThis, "navigator", { value: { share: async (d) => { shared = d; }, clipboard: { writeText: async (t) => { copied = t; } } }, configurable: true });
 localStorage.setItem(
   "wo:settings",
   JSON.stringify({ place: { name: "岐阜県養老町鷲巣", area: "", latitude: 35.286, longitude: 136.56 }, sensitivity: 0 }),
@@ -53,6 +54,17 @@ const saved = JSON.parse(store.get("wo:feedback"));
 console.log(`評価: ${saved.length} 件 / ${saved[0].kind} = ${saved[0].rating}（寒かった→ちょうどよいに押し直し）`);
 
 console.log("服のカード:", (html.match(/<button type="button" class="item" aria-haspopup="dialog"/g) ?? []).length, "枚（タップで拡大するボタン）");
+
+// 自分の AI に聞く: プロンプトの中身と、コピーボタン
+const prompt = html.match(/<textarea class="ai-prompt"[^>]*>([\s\S]*?)<\/textarea>/)?.[1];
+console.log("AI プロンプト:\n" + (prompt ?? "なし"));
+console.log("送るボタン:", html.includes('data-action="share-prompt"') ? "あり" : "なし");
+const aiStatus = { textContent: "" };
+els.app.querySelector = (sel) => (sel === ".ai-status" ? aiStatus : null);
+const copyBtn = { dataset: { action: "copy-prompt" } };
+copyBtn.closest = (sel) => (sel === "button[data-action]" ? copyBtn : null);
+for (const fn of handlers["app:click"]) await fn({ target: copyBtn });
+console.log("コピー:", aiStatus.textContent, "| 内容一致:", copied !== null && copied.includes("寒がり度"));
 
 handlers["open-settings:click"]?.forEach((fn) => fn());
 for (const fn of handlers["export-feedback:click"]) await fn();

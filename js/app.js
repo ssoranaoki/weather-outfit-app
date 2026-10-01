@@ -4,6 +4,7 @@ import { fetchForecast, searchPlaces, currentPlace, daytimeRows, nightRows } fro
 import { loadSettings, saveSettings, SENSITIVITY_CHOICES } from "./settings.js";
 import { RATINGS, loadFeedback, saveFeedback, upsertRecord, findRecord, toCsv } from "./feedback.js";
 import { openZoom } from "./zoom.js";
+import { buildAiPrompt } from "./ai-prompt.js";
 
 const app = document.getElementById("app");
 const dialog = document.getElementById("settings");
@@ -94,6 +95,54 @@ function onRate(e) {
   section.querySelector(".feedback-done").textContent = "記録しました。押し直すと変更できます";
 }
 
+// ---- 自分の AI に聞く ----
+// 端末内の設定（地域・寒がり度）を書き込んだプロンプトを、コピーまたは AI アプリへ共有で渡す
+let currentPrompt = "";
+
+function aiAskHtml(mode) {
+  const label = SENSITIVITY_CHOICES.find((c) => c.value === settings.sensitivity)?.label ?? "ふつう";
+  currentPrompt = buildAiPrompt({ place: settings.place, sensitivityLabel: label, mode });
+  const canShare = typeof navigator.share === "function";
+  return `
+    <div class="sep"></div>
+    <section class="ai-ask" aria-labelledby="ai-ask-title">
+      <div class="label" id="ai-ask-title">🤖 自分の AI に聞く</div>
+      <p class="ai-ask-sub">ChatGPT や Claude に貼り付けると、同じ判定で答えてくれます。着せ替えもできる AI なら、続けて全身写真を送ってください（写真はこのアプリには送られません）。</p>
+      <textarea class="ai-prompt" readonly rows="5" aria-label="AI に送る文">${esc(currentPrompt)}</textarea>
+      <div class="ai-actions">
+        <button type="button" class="ai-btn" data-action="copy-prompt">📋 コピー</button>
+        ${canShare ? `<button type="button" class="ai-btn" data-action="share-prompt">📤 AI アプリに送る</button>` : ""}
+      </div>
+      <p class="ai-status" role="status"></p>
+      <p class="ai-note">地域名と寒がり度が文に入ります。</p>
+    </section>`;
+}
+
+async function onAiAction(e) {
+  const btn = e.target.closest("button[data-action]");
+  if (!btn || !btn.dataset.action.endsWith("-prompt")) return;
+  const status = app.querySelector(".ai-status");
+  if (btn.dataset.action === "share-prompt") {
+    try {
+      await navigator.share({ text: currentPrompt });
+      status.textContent = "送りました";
+    } catch (err) {
+      if (err.name !== "AbortError") status.textContent = "送れませんでした。コピーを使ってください";
+    }
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(currentPrompt);
+    status.textContent = "コピーしました。AI のチャットに貼り付けてください";
+  } catch {
+    // クリップボードが使えない環境: 文を選択状態にして、手でコピーしてもらう
+    const ta = app.querySelector(".ai-prompt");
+    ta.focus();
+    ta.select();
+    status.textContent = "文を選択しました。長押しでコピーしてください";
+  }
+}
+
 const credit = `<p class="credit">天気データ: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>（CC BY 4.0）<br><a href="llms.txt">AI で使う方へ（llms.txt）</a></p>`;
 
 function renderDay(rows, target) {
@@ -174,7 +223,7 @@ async function render() {
     // 保存が古すぎて対象日の予報を含まない（何日も電波がなかった等）ときは、出せる情報がない
     if (!daytimeRows(rows, target).length) throw new Error("最新の天気を取得できませんでした");
     const html = mode === "day" ? renderDay(rows, target) : renderNight(rows, target);
-    app.innerHTML = (stale ? staleHtml(savedAt) : "") + html + credit;
+    app.innerHTML = (stale ? staleHtml(savedAt) : "") + html + aiAskHtml(mode) + credit;
   } catch (e) {
     app.innerHTML = `<p class="error">${esc(e.message)}<br>電波の良いところで開き直してください。</p>`;
   }
@@ -275,6 +324,7 @@ async function useLocation() {
 
 app.addEventListener("click", onRate);
 app.addEventListener("click", onItemTap);
+app.addEventListener("click", onAiAction);
 document.getElementById("export-feedback").addEventListener("click", exportFeedback);
 document.getElementById("use-location").addEventListener("click", useLocation);
 document.getElementById("place-search").addEventListener("click", doSearch);

@@ -12,6 +12,7 @@ AI native 設計（AI は利用者側に置く）。バイブコーディング�
 - `js/settings.js` 端末内の設定（地域・寒がり度のみ）
 - `js/feedback.js` 「どうだった？」の記録と CSV 書き出し（端末内のみ）
 - `js/app.js` 画面の組み立て
+- `js/ai-prompt.js` 「自分の AI に聞く」のプロンプト組み立て（端末内の地域・寒がり度を書き込む）
 - `js/zoom.js` 服のカードをタップしたときの中央拡大表示（FLIP アニメーション）
 - `tests/` ルールのテスト（`npm test`）
 - `img/clothes/` 服カタログ画像（生成条件は同フォルダの README.md）
