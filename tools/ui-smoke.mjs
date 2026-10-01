@@ -17,7 +17,21 @@ const el = (id) =>
 globalThis.document = { getElementById: el, body: { className: "" }, createElement: () => ({ click() {} }), addEventListener() {}, querySelector: () => null, visibilityState: "visible" };
 let shared = null;
 let copied = null;
-Object.defineProperty(globalThis, "navigator", { value: { share: async (d) => { shared = d; }, clipboard: { writeText: async (t) => { copied = t; } } }, configurable: true });
+Object.defineProperty(globalThis, "navigator", {
+  value: { share: async (d) => { shared = d; }, canShare: (d) => Boolean(d.files), clipboard: { writeText: async (t) => { copied = t; } } },
+  configurable: true,
+});
+// 服の画像（相対パス）はファイルから返し、天気 API などは本物のネットへ
+const realFetch = globalThis.fetch;
+globalThis.fetch = async (url, init) => {
+  const u = String(url);
+  if (u.startsWith("img/")) {
+    const { readFile } = await import("node:fs/promises");
+    const buf = await readFile(new URL(`../${u}`, import.meta.url));
+    return { ok: true, blob: async () => new Blob([buf], { type: "image/jpeg" }) };
+  }
+  return realFetch(url, init);
+};
 localStorage.setItem(
   "wo:settings",
   JSON.stringify({ place: { name: "岐阜県養老町鷲巣", area: "", latitude: 35.286, longitude: 136.56 }, sensitivity: 0 }),
@@ -65,6 +79,21 @@ const copyBtn = { dataset: { action: "copy-prompt" } };
 copyBtn.closest = (sel) => (sel === "button[data-action]" ? copyBtn : null);
 for (const fn of handlers["app:click"]) await fn({ target: copyBtn });
 console.log("コピー:", aiStatus.textContent, "| 内容一致:", copied !== null && copied.includes("寒がり度"));
+
+// 着せ替え: 写真を選んで、服の画像とまとめて共有
+console.log("着せ替え欄:", html.includes('data-action="share-tryon"') ? "あり" : "なし");
+const photoStatus = { textContent: "" };
+els.app.querySelector = (sel) => (sel === ".ai-status" ? aiStatus : sel === ".photo-status" ? photoStatus : null);
+const photo = new File([new Uint8Array(10)], "me.jpg", { type: "image/jpeg" });
+for (const fn of handlers["app:change"] ?? []) fn({ target: { matches: (s) => s === ".photo-input", files: [photo] } });
+const tryBtn = { dataset: { action: "share-tryon" } };
+tryBtn.closest = (sel) => (sel === "button[data-action]" ? tryBtn : null);
+shared = null;
+for (const fn of handlers["app:click"]) await fn({ target: tryBtn });
+console.log("写真の表示:", photoStatus.textContent);
+console.log("共有したファイル:", shared?.files?.map((f) => `${f.name}(${f.size}B)`).join(", "));
+console.log("共有した文の末尾:\n" + shared?.text.split("\n").slice(-6).join("\n"));
+console.log("状態:", aiStatus.textContent);
 
 handlers["open-settings:click"]?.forEach((fn) => fn());
 for (const fn of handlers["export-feedback:click"]) await fn();

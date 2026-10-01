@@ -43,6 +43,24 @@ export function weatherBlock(w) {
 }
 
 /**
+ * 着せ替えの頼み方（服の画像と一緒に共有するときに、プロンプトの後ろに付ける）
+ * @param {{ hasPhoto: boolean, itemLabels: string[], hasOuter?: boolean }} p itemLabels は添付する服の順（上着→トップス→ボトムス）
+ */
+export function buildTryOnPrompt({ hasPhoto, itemLabels, hasOuter = false }) {
+  const clothes = itemLabels.join("・");
+  const head = hasPhoto
+    ? `【着せ替え】1枚目は私の全身写真、2枚目以降は判定した服（${clothes}）の画像です。1枚目の人物に、これらの服を着せた全身の画像を作ってください。`
+    : `【着せ替え】添付は判定した服（${clothes}）の画像です。このあと私の全身写真を送るので、その人物にこれらの服を着せた全身の画像を作ってください。`;
+  return [
+    head,
+    "・顔、髪型、体型、ポーズ、背景は変えないでください",
+    "・服の色、形、素材は画像のとおりにしてください",
+    ...(hasOuter ? ["・上着は、ほかの服の上に羽織らせてください"] : []),
+    "・画像を作れない場合は、着こなしの説明だけで構いません",
+  ].join("\n");
+}
+
+/**
  * @param {{ place: object, sensitivityLabel: string, mode: "day" | "night", weather?: object }} p
  */
 export function buildAiPrompt({ place, sensitivityLabel, mode, weather }) {

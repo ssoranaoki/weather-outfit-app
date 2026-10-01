@@ -70,3 +70,22 @@ test("説明書（llms.txt）に【天気データ】の使い方が書いてあ
   assert.match(txt, /利用者の文に「【天気データ】」があれば/);
   assert.ok(txt.includes(LLMS_URL)); // 予備の取得先として載っている
 });
+
+import { buildTryOnPrompt } from "../js/ai-prompt.js";
+
+test("着せ替え: 写真ありは「1枚目は全身写真」、服の名前が順に入る", () => {
+  const p = buildTryOnPrompt({ hasPhoto: true, itemLabels: ["うすい上着", "半袖", "薄手のボトムス"], hasOuter: true });
+  assert.match(p, /^【着せ替え】1枚目は私の全身写真、2枚目以降は判定した服（うすい上着・半袖・薄手のボトムス）の画像です。/);
+  assert.match(p, /顔、髪型、体型、ポーズ、背景は変えないでください/);
+});
+
+test("着せ替え: 写真なしは「このあと全身写真を送る」", () => {
+  const p = buildTryOnPrompt({ hasPhoto: false, itemLabels: ["半袖", "薄手のボトムス"] });
+  assert.match(p, /このあと私の全身写真を送るので/);
+  assert.doesNotMatch(p, /1枚目は私の全身写真/);
+});
+
+test("着せ替え: 上着がない日は「羽織らせて」を入れない", () => {
+  assert.match(buildTryOnPrompt({ hasPhoto: true, itemLabels: ["うすい上着", "半袖"], hasOuter: true }), /羽織らせて/);
+  assert.doesNotMatch(buildTryOnPrompt({ hasPhoto: true, itemLabels: ["半袖", "薄手のボトムス"] }), /羽織らせて/);
+});
