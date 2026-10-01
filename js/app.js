@@ -94,7 +94,7 @@ function onRate(e) {
   section.querySelector(".feedback-done").textContent = "記録しました。押し直すと変更できます";
 }
 
-const credit = `<p class="credit">天気データ: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>（CC BY 4.0）</p>`;
+const credit = `<p class="credit">天気データ: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>（CC BY 4.0）<br><a href="llms.txt">AI で使う方へ（llms.txt）</a></p>`;
 
 function renderDay(rows, target) {
   const a = dayAdvice(daytimeRows(rows, target), settings.sensitivity);

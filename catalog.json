@@ -1,0 +1,219 @@
+{
+  "name": "きょうの服装",
+  "description": "天気予報から服装と寝間着を判定するルールと、服カタログ画像の一覧",
+  "source": "https://github.com/ssoranaoki/weather-outfit-app/blob/main/js/rules.js",
+  "units": {
+    "temperature": "℃（整数に四捨五入してから判定）"
+  },
+  "items": [
+    {
+      "id": "top-short",
+      "label": "半袖",
+      "category": "top",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/top-short.jpg"
+    },
+    {
+      "id": "top-long",
+      "label": "長袖",
+      "category": "top",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/top-long.jpg"
+    },
+    {
+      "id": "top-sweater",
+      "label": "セーター",
+      "category": "top",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/top-sweater.jpg"
+    },
+    {
+      "id": "top-thick-sweater",
+      "label": "厚手のセーター",
+      "category": "top",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/top-thick-sweater.jpg"
+    },
+    {
+      "id": "bottom-light",
+      "label": "薄手のボトムス",
+      "category": "bottom",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/bottom-light.jpg"
+    },
+    {
+      "id": "bottom-pants",
+      "label": "長ズボン",
+      "category": "bottom",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/bottom-pants.jpg"
+    },
+    {
+      "id": "bottom-thick",
+      "label": "厚手のズボン",
+      "category": "bottom",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/bottom-thick.jpg"
+    },
+    {
+      "id": "outer-light",
+      "label": "うすい上着",
+      "category": "outer",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/outer-light.jpg"
+    },
+    {
+      "id": "outer-jacket",
+      "label": "ジャケット",
+      "category": "outer",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/outer-jacket.jpg"
+    },
+    {
+      "id": "outer-coat",
+      "label": "コート",
+      "category": "outer",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/outer-coat.jpg"
+    },
+    {
+      "id": "outer-thick-coat",
+      "label": "厚手のコート",
+      "category": "outer",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/outer-thick-coat.jpg"
+    },
+    {
+      "id": "acc-winter",
+      "label": "手袋・マフラー",
+      "category": "acc",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/acc-winter.jpg"
+    },
+    {
+      "id": "pj-short",
+      "label": "半袖の寝間着",
+      "category": "pj",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/pj-short.jpg"
+    },
+    {
+      "id": "pj-long",
+      "label": "長袖の寝間着",
+      "category": "pj",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/pj-long.jpg"
+    },
+    {
+      "id": "pj-warm",
+      "label": "厚手の寝間着と靴下",
+      "category": "pj",
+      "image": "https://ssoranaoki.github.io/weather-outfit-app/img/clothes/pj-warm.jpg"
+    }
+  ],
+  "rules": {
+    "hours": {
+      "dayFrom": 7,
+      "dayTo": 18,
+      "nightFrom": 22,
+      "nightTo": 6
+    },
+    "mode": {
+      "nightModeFrom": 18,
+      "nightModeUntil": 4
+    },
+    "sensitivityStepCelsius": 2,
+    "innerByDaytimeMaxApparent": [
+      {
+        "min": null,
+        "max": 7,
+        "top": "top-thick-sweater",
+        "bottom": "bottom-thick"
+      },
+      {
+        "min": 8,
+        "max": 15,
+        "top": "top-sweater",
+        "bottom": "bottom-pants"
+      },
+      {
+        "min": 16,
+        "max": 24,
+        "top": "top-long",
+        "bottom": "bottom-pants"
+      },
+      {
+        "min": 25,
+        "max": null,
+        "top": "top-short",
+        "bottom": "bottom-light"
+      }
+    ],
+    "outerByDaytimeMinApparent": [
+      {
+        "min": null,
+        "max": 7,
+        "outer": "outer-thick-coat",
+        "extra": "acc-winter"
+      },
+      {
+        "min": 8,
+        "max": 11,
+        "outer": "outer-coat",
+        "extra": null
+      },
+      {
+        "min": 12,
+        "max": 15,
+        "outer": "outer-jacket",
+        "extra": null
+      },
+      {
+        "min": 16,
+        "max": 19,
+        "outer": "outer-light",
+        "extra": null
+      },
+      {
+        "min": 20,
+        "max": null,
+        "outer": null,
+        "extra": null
+      }
+    ],
+    "pajamaByNightMinTemperature": [
+      {
+        "min": null,
+        "max": 9,
+        "item": "pj-warm",
+        "headline": "厚手の長袖に靴下もはいて",
+        "airConditionerTip": "暖房で乾燥しやすいので加湿を"
+      },
+      {
+        "min": 10,
+        "max": 14,
+        "item": "pj-long",
+        "headline": "長袖に厚手の掛け布団で",
+        "airConditionerTip": "暖房が切れた明け方に冷えます"
+      },
+      {
+        "min": 15,
+        "max": 19,
+        "item": "pj-long",
+        "headline": "長袖で寝てください",
+        "airConditionerTip": "冷暖房なしでも過ごしやすい夜です"
+      },
+      {
+        "min": 20,
+        "max": 24,
+        "item": "pj-short",
+        "headline": "半袖で寝てください",
+        "airConditionerTip": "冷えすぎに注意。タイマーは短めで"
+      },
+      {
+        "min": 25,
+        "max": null,
+        "item": "pj-short",
+        "headline": "半袖で寝てください",
+        "airConditionerTip": "タイマーが切れると暑くなります。弱めに朝までつけるのも手（熱中症に注意）"
+      }
+    ],
+    "notes": {
+      "wideRange": 8,
+      "rainProb": 50,
+      "humidHotMax": 25,
+      "humidHotHumidity": 70,
+      "colderThanLastNight": 5,
+      "dryMaxTemp": 14,
+      "dryHumidity": 40,
+      "muggyNightMin": 20,
+      "muggyNightHumidity": 80
+    }
+  }
+}

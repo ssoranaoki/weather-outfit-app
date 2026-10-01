@@ -8,7 +8,7 @@ export const NIGHT_END_HOUR = 6;    // 夜間判定の終了（当日 6 時、�
 export const NIGHT_MODE_FROM = 18;  // この時刻以降は就寝前モード
 export const NIGHT_MODE_UNTIL = 4;  // この時刻より前も就寝前モード（深夜に開いた場合）
 
-const SENSITIVITY_STEP = 2; // 寒がり度 1 段階あたり何℃ずらすか
+export const SENSITIVITY_STEP = 2; // 寒がり度 1 段階あたり何℃ずらすか
 
 // 寒がり度（+ で寒がり）を反映した「本人の感じる温度」
 export function adjustForSensitivity(temp, sensitivity) {
@@ -54,7 +54,19 @@ export function outerWear(minTemp) {
   return { ...C["outer-thick-coat"], extra: C["acc-winter"] };
 }
 
-const WIDE_RANGE = 8; // これ以上の寒暖差で「昼は脱いでOK」
+// 注意書き・補足のしきい値（llms.txt と catalog.json もここから自動生成する）
+export const NOTE_RULES = {
+  wideRange: 8, // 日中の寒暖差がこれ以上で「昼は脱いでOK」と寒暖差の注意
+  rainProb: 50, // 日中の降水確率がこれ以上の時刻があれば傘の注意
+  humidHotMax: 25, // 体感最高がこれ以上 かつ
+  humidHotHumidity: 70, // 日中の平均湿度がこれ以上で「蒸し暑い日」
+  colderThanLastNight: 5, // 昨夜の最低よりこれ以上低いと「昨夜より○℃冷えます」
+  dryMaxTemp: 14, // 夜の最低がこれ以下 かつ
+  dryHumidity: 40, // 夜の最小湿度がこれ以下で「乾燥します」
+  muggyNightMin: 20, // 夜の最低がこれ以上 かつ
+  muggyNightHumidity: 80, // 夜の平均湿度がこれ以上で「蒸し暑い夜」
+};
+const N = NOTE_RULES;
 
 /**
  * 日中の服装アドバイス
@@ -75,7 +87,7 @@ export function dayAdvice(hours, sensitivity) {
 
   let headline;
   if (!outer) headline = `${inner.top.label}1枚で過ごせます`;
-  else if (range >= WIDE_RANGE) headline = `${inner.top.label}に${outer.label}を。昼は脱いでOK`;
+  else if (range >= N.wideRange) headline = `${inner.top.label}に${outer.label}を。昼は脱いでOK`;
   else headline = `${inner.top.label}に${outer.label}を（1日着たままで）`;
 
   const items = [];
@@ -86,13 +98,13 @@ export function dayAdvice(hours, sensitivity) {
   const humidityAvg = Math.round(hours.reduce((s, h) => s + h.humidity, 0) / hours.length);
   const notes = [];
 
-  const rainy = hours.find((h) => h.precipProb !== null && h.precipProb >= 50);
+  const rainy = hours.find((h) => h.precipProb !== null && h.precipProb >= N.rainProb);
   if (rainy) {
     const peak = Math.max(...hours.map((h) => h.precipProb ?? 0));
     notes.push(`☂ ${rainy.hour}時ごろから雨の予報（最大${peak}%）。傘を持っていきましょう`);
   }
-  if (range >= WIDE_RANGE) notes.push(`寒暖差 ${Math.round(range)}℃。脱ぎ着しやすい服で`);
-  if (max >= 25 && humidityAvg >= 70) notes.push("蒸し暑い日です。通気性のよい素材を");
+  if (range >= N.wideRange) notes.push(`寒暖差 ${Math.round(range)}℃。脱ぎ着しやすい服で`);
+  if (max >= N.humidHotMax && humidityAvg >= N.humidHotHumidity) notes.push("蒸し暑い日です。通気性のよい素材を");
 
   return {
     headline,
@@ -112,8 +124,6 @@ export function pajamaBand(minTemp) {
   return { headline: "厚手の長袖に靴下もはいて", icon: "🧦", item: C["pj-warm"], ac: "暖房で乾燥しやすいので加湿を", mentionsDryness: true };
 }
 
-const COLDER_THAN_LAST_NIGHT = 5;
-
 /**
  * 寝間着アドバイス
  * @param {Array<{temp:number, humidity:number}>} tonight 今夜 22〜6 時
@@ -128,14 +138,14 @@ export function pajamaAdvice(tonight, lastNight, sensitivity) {
   if (lastNight.length) {
     const lastMin = Math.min(...lastNight.map((h) => h.temp));
     const diff = rawMin - lastMin;
-    if (diff <= -COLDER_THAN_LAST_NIGHT) notes.unshift(`⚠ 昨夜より ${Math.round(-diff)}℃ 冷えます`);
+    if (diff <= -N.colderThanLastNight) notes.unshift(`⚠ 昨夜より ${Math.round(-diff)}℃ 冷えます`);
   }
   const minHumidity = Math.min(...tonight.map((h) => h.humidity));
   const avgHumidity = tonight.reduce((s, h) => s + h.humidity, 0) / tonight.length;
-  if (min <= 14 && minHumidity <= 40 && !band.mentionsDryness) {
+  if (min <= N.dryMaxTemp && minHumidity <= N.dryHumidity && !band.mentionsDryness) {
     notes.push("空気が乾燥します。加湿と水分補給を");
   }
-  if (min >= 20 && avgHumidity >= 80) notes.push("蒸し暑い夜です。汗を吸いやすい素材を");
+  if (min >= N.muggyNightMin && avgHumidity >= N.muggyNightHumidity) notes.push("蒸し暑い夜です。汗を吸いやすい素材を");
 
   return { headline: band.headline, icon: band.icon, item: band.item, notes, min: Math.round(rawMin) };
 }

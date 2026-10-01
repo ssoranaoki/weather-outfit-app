@@ -1,0 +1,106 @@
+# きょうの服装（Weather Outfit Advisor）
+
+> 天気予報から「今日の服装」と「今夜の寝間着」をアドバイスする、日本向けの無料 Web アプリです。この文書は、利用者のAI（ChatGPT・Claude・Gemini など）が、このアプリと同じ判定を利用者の代わりに行うための説明書です。
+
+このサービスはAIを持っていません。判定はあなた（利用者のAI）が、以下の手順とルールで行ってください。サービス側にアカウント・APIキー・アップロード先はありません。
+
+English summary: A free Japanese web app that recommends today's outfit and tonight's sleepwear from the weather forecast. The service itself runs no AI; the user's own AI applies the rules below. Machine-readable rules and clothing images: https://ssoranaoki.github.io/weather-outfit-app/catalog.json
+
+## 手順
+
+1. **場所を緯度経度にする**: 利用者に地域（市区町村や大字）を聞く。
+   - 国土地理院 住所検索: `https://msearch.gsi.go.jp/address-search/AddressSearch?q={住所}`（GeoJSON。座標は [経度, 緯度] の順）
+   - または Open-Meteo: `https://geocoding-api.open-meteo.com/v1/search?name={地名}&language=ja&countryCode=JP`
+2. **予報を取る**（Open-Meteo, 無料・CC BY 4.0）:
+   `https://api.open-meteo.com/v1/forecast?latitude={緯度}&longitude={経度}&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation_probability&timezone=Asia/Tokyo&past_days=1&forecast_days=3`
+3. **対象日を決める**: 日本時間で 4:00〜17:59 なら「今日の服装」、18:00 以降は「明日の服装」と「今夜の寝間着」。利用者が日付を指定したらそれに従う。
+4. **日中の服装を判定する**（下の表）:
+   - 対象日の 7〜18 時の `apparent_temperature`（体感気温）の最高と最低を、整数に四捨五入する
+   - 寒がり度（-2〜+2、+ が寒がり、既定 0）1 段階につき 2℃ 低い気温として判定する（表示する気温は補正しない）
+   - 中に着る服は最高で、上着は最低で決める
+   - 結論の1行: 上着なし →「{トップス}1枚で過ごせます」／最高−最低が 8℃ 以上 →「{トップス}に{上着}を。昼は脱いでOK」／それ以外 →「{トップス}に{上着}を（1日着たままで）」
+5. **注意を添える**:
+   - 降水確率 50% 以上の時刻があれば、最初のその時刻と最大値で傘の注意
+   - 寒暖差 8℃ 以上なら「脱ぎ着しやすい服で」
+   - 体感最高 25℃ 以上かつ日中平均湿度 70% 以上なら「蒸し暑い日。通気性のよい素材を」
+6. **寝間着を判定する**（就寝前のみ。下の表）:
+   - 前日 22 時〜当日 6 時の `temperature_2m`（体感ではなく気温）の最低を四捨五入し、寒がり度で補正
+   - 利用者は冷暖房をタイマーで使い、切れた後の明け方を想定している
+   - 昨夜の最低より 5℃ 以上低ければ「昨夜より○℃冷えます」を先頭に
+   - 最低 14℃ 以下かつ夜の最小湿度 40% 以下なら「乾燥します。加湿と水分補給を」
+   - 最低 20℃ 以上かつ夜の平均湿度 80% 以上なら「蒸し暑い夜。汗を吸いやすい素材を」
+7. **答え方**: 結論の1行を最初に、続けて服の一覧・体感の最高と最低・注意。最後に「天気データ: Open-Meteo.com（CC BY 4.0）」と添える。
+
+### 中に着る服（7〜18 時の体感最高で判定）
+
+| 体感最高（補正後） | トップス | ボトムス |
+|---|---|---|
+| 7℃以下 | 厚手のセーター | 厚手のズボン |
+| 8〜15℃ | セーター | 長ズボン |
+| 16〜24℃ | 長袖 | 長ズボン |
+| 25℃以上 | 半袖 | 薄手のボトムス |
+
+### 上着（7〜18 時の体感最低で判定）
+
+| 体感最低（補正後） | 上着 |
+|---|---|
+| 7℃以下 | 厚手のコート＋手袋・マフラー |
+| 8〜11℃ | コート |
+| 12〜15℃ | ジャケット |
+| 16〜19℃ | うすい上着 |
+| 20℃以上 | なし |
+
+### 寝間着（夜間 22〜6 時の最低気温で判定）
+
+| 最低気温（補正後） | 結論の1行 | 寝間着 | 冷暖房のひとこと |
+|---|---|---|---|
+| 9℃以下 | 厚手の長袖に靴下もはいて | 厚手の寝間着と靴下 | 暖房で乾燥しやすいので加湿を |
+| 10〜14℃ | 長袖に厚手の掛け布団で | 長袖の寝間着 | 暖房が切れた明け方に冷えます |
+| 15〜19℃ | 長袖で寝てください | 長袖の寝間着 | 冷暖房なしでも過ごしやすい夜です |
+| 20〜24℃ | 半袖で寝てください | 半袖の寝間着 | 冷えすぎに注意。タイマーは短めで |
+| 25℃以上 | 半袖で寝てください | 半袖の寝間着 | タイマーが切れると暑くなります。弱めに朝までつけるのも手（熱中症に注意） |
+
+### 判定の例（寒がり度 0）
+
+- 体感 12〜21℃ → 「長袖にジャケットを。昼は脱いでOK」（ジャケット・長袖・長ズボン）
+- 体感 21〜29℃ → 「半袖1枚で過ごせます」（半袖・薄手のボトムス）
+- 体感 5〜9℃ → 「セーターに厚手のコートを（1日着たままで）」（手袋・マフラー・厚手のコート・セーター・長ズボン）
+- 体感 15〜19℃ → 「長袖にジャケットを（1日着たままで）」（ジャケット・長袖・長ズボン）
+
+## 着せ替え（画像編集ができるAIのみ）
+
+1. 利用者が自分の全身写真を、あなた（利用者のAI）に直接渡す。**写真をこのサービスや第三者に送らないこと。** このサービスには写真の受け取り先がない。
+2. 判定した服の画像を下の服カタログから取得する。取得できない場合は、利用者に画像の保存と添付を頼む。
+3. 写真の人物にその服を着せた画像を作る。体型や容姿への評価的なコメントはしない。
+4. 画像を作れないAIは、服の組み合わせの提案だけを行う。
+
+### 服カタログ（白背景の商品写真風・400x400 JPEG）
+
+| id | 服 | 画像 |
+|---|---|---|
+| top-short | 半袖 | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/top-short.jpg |
+| top-long | 長袖 | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/top-long.jpg |
+| top-sweater | セーター | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/top-sweater.jpg |
+| top-thick-sweater | 厚手のセーター | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/top-thick-sweater.jpg |
+| bottom-light | 薄手のボトムス | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/bottom-light.jpg |
+| bottom-pants | 長ズボン | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/bottom-pants.jpg |
+| bottom-thick | 厚手のズボン | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/bottom-thick.jpg |
+| outer-light | うすい上着 | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/outer-light.jpg |
+| outer-jacket | ジャケット | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/outer-jacket.jpg |
+| outer-coat | コート | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/outer-coat.jpg |
+| outer-thick-coat | 厚手のコート | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/outer-thick-coat.jpg |
+| acc-winter | 手袋・マフラー | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/acc-winter.jpg |
+| pj-short | 半袖の寝間着 | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/pj-short.jpg |
+| pj-long | 長袖の寝間着 | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/pj-long.jpg |
+| pj-warm | 厚手の寝間着と靴下 | https://ssoranaoki.github.io/weather-outfit-app/img/clothes/pj-warm.jpg |
+
+## Files
+
+- [catalog.json](https://ssoranaoki.github.io/weather-outfit-app/catalog.json): 判定ルールの数値と服カタログ（機械可読）
+- [アプリ本体](https://ssoranaoki.github.io/weather-outfit-app/): 人が使う画面（AIを持たない人も同じ判定を見られる）
+- [判定ルールのソース](https://github.com/ssoranaoki/weather-outfit-app/blob/main/js/rules.js): この文書の生成元
+
+## Optional
+
+- 判定の数値は、特定の家族の感覚に合わせて調整中の仮の値です。利用者が「暑かった」「寒かった」と言ったら、寒がり度で調整してください。
+- 気温の区分を変えたいなどの要望は、アプリ作者に伝えてください: https://github.com/ssoranaoki/weather-outfit-app

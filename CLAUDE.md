@@ -16,6 +16,7 @@ AI native 設計（AI は利用者側に置く）。バイブコーディング�
 - `tests/` ルールのテスト（`npm test`）
 - `img/clothes/` 服カタログ画像（生成条件は同フォルダの README.md）
 - `manifest.webmanifest` / `sw.js` / `img/icons/` ホーム画面に追加（PWA）とオフライン表示
+- `llms.txt` / `catalog.json` AI 向けの説明書と機械可読ルール（`node tools/build-llms.mjs` で rules.js から生成。手で編集しない）
 - `tools/ui-smoke.mjs` ブラウザなしで画面の組み立てを確認するスクリプト
 
 ## 方針

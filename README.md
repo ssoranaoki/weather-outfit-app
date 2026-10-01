@@ -29,3 +29,12 @@ npm test
 ```
 
 天気データ: [Open-Meteo.com](https://open-meteo.com/)（CC BY 4.0）
+
+## AI から使う（llms.txt）
+
+利用者の AI（ChatGPT・Claude など）向けの説明書を `llms.txt`、機械可読のルールと服カタログを `catalog.json` に置いている。
+どちらも `js/rules.js` から生成するので、ルールを変えたら必ず作り直す（テストで差分を検出する）。
+
+```bash
+node tools/build-llms.mjs
+```
