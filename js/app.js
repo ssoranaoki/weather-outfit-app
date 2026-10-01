@@ -292,9 +292,34 @@ dialog.addEventListener("close", render);
 
 render();
 
+// ホーム画面のアプリは裏で開いたままになりやすい。画面に戻ってきたら作り直す
+// （夜に開いたまま翌朝見たとき、寝間着の画面が残らないように。天気は 30 分以内なら保存を使う）
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && !dialog.open && !document.querySelector(".zoom-layer")) render();
+});
+
 // ホーム画面に追加（PWA）用。HTTPS か localhost でのみ登録できる
 if ("serviceWorker" in navigator && window.isSecureContext) {
-  navigator.serviceWorker.register("./sw.js").catch(() => {
-    /* 登録できなくても通常のページとして動く */
+  // すでに古い版のサービスワーカーが動いていたか（初回インストール時は読み直さないため）
+  const hadController = Boolean(navigator.serviceWorker.controller);
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    // 新しい版に切り替わったら 1 回だけ読み直して、最新の画面にする
+    if (!hadController || reloaded) return;
+    reloaded = true;
+    location.reload();
   });
+
+  navigator.serviceWorker
+    // sw.js 自体の確認もブラウザの HTTP キャッシュを通さない
+    .register("./sw.js", { updateViaCache: "none" })
+    .then((reg) => {
+      // ホーム画面のアプリは裏で開いたままになりやすいので、画面に戻ってきたときにも更新を確認する
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") reg.update().catch(() => {});
+      });
+    })
+    .catch(() => {
+      /* 登録できなくても通常のページとして動く */
+    });
 }

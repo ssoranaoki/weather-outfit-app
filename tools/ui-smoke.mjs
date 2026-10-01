@@ -14,7 +14,7 @@ const el = (id) =>
     addEventListener: (t, fn) => (handlers[`${id}:${t}`] ??= []).push(fn),
     showModal() { this.open = true; },
   });
-globalThis.document = { getElementById: el, body: { className: "" }, createElement: () => ({ click() {} }) };
+globalThis.document = { getElementById: el, body: { className: "" }, createElement: () => ({ click() {} }), addEventListener() {}, querySelector: () => null, visibilityState: "visible" };
 let shared = null;
 Object.defineProperty(globalThis, "navigator", { value: { share: async (d) => { shared = d; } }, configurable: true });
 localStorage.setItem(
