@@ -109,6 +109,33 @@
       "nightModeUntil": 4
     },
     "sensitivityStepCelsius": 2,
+    "sensitivityChoices": [
+      {
+        "value": 2,
+        "label": "かなり寒がり",
+        "judgeShiftCelsius": -4
+      },
+      {
+        "value": 1,
+        "label": "少し寒がり",
+        "judgeShiftCelsius": -2
+      },
+      {
+        "value": 0,
+        "label": "ふつう",
+        "judgeShiftCelsius": 0
+      },
+      {
+        "value": -1,
+        "label": "少し暑がり",
+        "judgeShiftCelsius": 2
+      },
+      {
+        "value": -2,
+        "label": "かなり暑がり",
+        "judgeShiftCelsius": 4
+      }
+    ],
     "innerByDaytimeMaxApparent": [
       {
         "min": null,

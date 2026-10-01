@@ -2,7 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { buildCatalog, buildLlmsTxt, bands } from "../tools/build-llms.mjs";
-import { CLOTHES, innerWear, outerWear, pajamaBand } from "../js/rules.js";
+import { CLOTHES, innerWear, outerWear, pajamaBand, SENSITIVITY_STEP } from "../js/rules.js";
+import { SENSITIVITY_CHOICES } from "../js/settings.js";
 
 const root = new URL("../", import.meta.url);
 const read = (p) => readFileSync(new URL(p, root), "utf8");
@@ -40,4 +41,18 @@ test("catalog.json の服は全部、公開 URL の画像を指す", () => {
   const c = buildCatalog();
   assert.equal(c.items.length, Object.keys(CLOTHES).length);
   for (const i of c.items) assert.match(i.image, /^https:\/\/ssoranaoki\.github\.io\/weather-outfit-app\/img\/clothes\/[a-z-]+\.jpg$/);
+});
+
+test("寒がり度: アプリの設定画面と同じ 5 段階の言葉と、AI が利用者に聞く指示がある", () => {
+  const txt = buildLlmsTxt();
+  for (const c of SENSITIVITY_CHOICES) assert.ok(txt.includes(`| ${c.label} |`), `${c.label} がない`);
+  assert.match(txt, /判定の前に、利用者に1回だけ聞いて/);
+  assert.match(txt, /0\. \*\*寒がり度を確認する\*\*/);
+});
+
+test("catalog.json の寒がり度: 値ごとの補正が判定と同じ向き（寒がりほど低い気温で判定）", () => {
+  const ch = buildCatalog().rules.sensitivityChoices;
+  assert.equal(ch.length, SENSITIVITY_CHOICES.length);
+  for (const c of ch) assert.equal(c.judgeShiftCelsius, -c.value * SENSITIVITY_STEP + 0); // +0 で -0 を 0 にそろえる
+  assert.ok(ch.find((c) => c.label === "かなり寒がり").judgeShiftCelsius < 0);
 });
