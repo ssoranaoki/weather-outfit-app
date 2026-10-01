@@ -241,6 +241,23 @@
       "dryHumidity": 40,
       "muggyNightMin": 20,
       "muggyNightHumidity": 80
-    }
+    },
+    "precipBlocks": [
+      {
+        "label": "朝",
+        "from": 7,
+        "to": 10
+      },
+      {
+        "label": "昼",
+        "from": 11,
+        "to": 14
+      },
+      {
+        "label": "夕方",
+        "from": 15,
+        "to": 18
+      }
+    ]
   }
 }

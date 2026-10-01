@@ -6,7 +6,7 @@ import { writeFileSync } from "node:fs";
 import {
   CLOTHES, NOTE_RULES as N, SENSITIVITY_STEP,
   DAY_START_HOUR, DAY_END_HOUR, NIGHT_START_HOUR, NIGHT_END_HOUR, NIGHT_MODE_FROM, NIGHT_MODE_UNTIL,
-  innerWear, outerWear, pajamaBand, dayAdvice, pajamaAdvice,
+  innerWear, outerWear, pajamaBand, dayAdvice, pajamaAdvice, PRECIP_BLOCKS,
 } from "../js/rules.js";
 import { SENSITIVITY_CHOICES } from "../js/settings.js";
 
@@ -66,6 +66,8 @@ export function buildCatalog() {
       outerByDaytimeMinApparent: outer,
       pajamaByNightMinTemperature: pajama,
       notes: N,
+      // 時間帯ごとの降水確率（各時間帯の最大値）。洗濯物を外に干せるかの目安
+      precipBlocks: PRECIP_BLOCKS,
     },
   };
 }
@@ -90,6 +92,11 @@ function sensitivityTable(dayMin, dayMax, nightMin) {
     return `| ${c.label}（${c.value > 0 ? "+" : ""}${c.value}） | ${shift > 0 ? "+" : ""}${shift}℃ | ${a.headline} | ${p.headline} |`;
   });
   return `例: 日中の体感 ${dayMin}〜${dayMax}℃、夜の最低 ${nightMin}℃ の日\n\n| 寒がり度 | 判定に使う気温 | 日中の服装 | 寝間着 |\n|---|---|---|---|\n${rows.join("\n")}`;
+}
+
+// 降水確率の時間帯（rules.js の PRECIP_BLOCKS から）例: 朝（7〜10時）・昼（11〜14時）・夕方（15〜18時）
+function precipBlocksText() {
+  return PRECIP_BLOCKS.map((b) => `${b.label}（${b.from}〜${b.to}時）`).join("・");
 }
 
 // アプリの設定画面と同じ 5 段階（settings.js から）
@@ -154,7 +161,8 @@ English summary: A free Japanese web app that recommends today's outfit and toni
    - 昨夜の最低より ${N.colderThanLastNight}℃ 以上低ければ「昨夜より○℃冷えます」を先頭に
    - 最低 ${N.dryMaxTemp}℃ 以下かつ夜の最小湿度 ${N.dryHumidity}% 以下なら「乾燥します。加湿と水分補給を」
    - 最低 ${N.muggyNightMin}℃ 以上かつ夜の平均湿度 ${N.muggyNightHumidity}% 以上なら「蒸し暑い夜。汗を吸いやすい素材を」
-7. **答え方**: 結論の1行を最初に、続けて服の一覧・体感の最高と最低・注意。最後に「天気データ: Open-Meteo.com（CC BY 4.0）」と添える。
+7. **時間帯ごとの降水確率を出す**（洗濯物を外に干せるかの目安）: ${precipBlocksText()}それぞれの降水確率の**最大値**。${N.rainProb}% 以上の時間帯は目立たせる。データがない時間帯は「-」。
+8. **答え方**: 結論の1行を最初に、続けて服の一覧・体感の最高と最低・時間帯ごとの降水確率・注意。最後に「天気データ: Open-Meteo.com（CC BY 4.0）」と添える。
 
 ## 寒がり・暑がり（寒がり度）
 

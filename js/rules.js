@@ -114,6 +114,29 @@ export function dayAdvice(hours, sensitivity) {
   };
 }
 
+// ---- 時間帯ごとの降水確率（洗濯物を外に干せるかの目安。母親の要望） ----
+
+// 日中（7〜18 時）を 4 時間ずつに分ける。値はその時間帯の最大（「どこかで降るかも」を見落とさない）
+export const PRECIP_BLOCKS = [
+  { label: "朝", from: 7, to: 10 },
+  { label: "昼", from: 11, to: 14 },
+  { label: "夕方", from: 15, to: 18 },
+];
+
+/**
+ * @param {Array<{hour:number, precipProb:number|null}>} hours 対象日の 7〜18 時
+ * @returns {Array<{label:string, from:number, to:number, prob:number|null, high:boolean}>} prob が null はデータなし
+ */
+export function precipByBlock(hours) {
+  return PRECIP_BLOCKS.map((b) => {
+    const probs = hours
+      .filter((h) => h.hour >= b.from && h.hour <= b.to && h.precipProb !== null && h.precipProb !== undefined)
+      .map((h) => h.precipProb);
+    const prob = probs.length ? Math.max(...probs) : null;
+    return { ...b, prob, high: prob !== null && prob >= N.rainProb };
+  });
+}
+
 // ---- 寝間着 ----
 
 export function pajamaBand(minTemp) {

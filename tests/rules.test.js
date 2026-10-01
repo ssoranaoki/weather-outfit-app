@@ -101,3 +101,24 @@ test("モード: 7時は朝（今日）、22時は就寝前（明日）、1時�
 test("日付の加算は月末をまたげる", () => {
   assert.equal(addDays("2026-09-30", 1), "2026-10-01");
 });
+
+import { precipByBlock, PRECIP_BLOCKS } from "../js/rules.js";
+
+test("降水確率: 朝(7-10)・昼(11-14)・夕方(15-18)ごとの最大値", () => {
+  const probs = [0, 10, 20, 30, 40, 50, 20, 10, 60, 0, 0, 5]; // 7〜18 時
+  const hours = probs.map((p, i) => ({ hour: 7 + i, precipProb: p }));
+  assert.deepEqual(
+    precipByBlock(hours).map((b) => [b.label, b.prob, b.high]),
+    [["朝", 30, false], ["昼", 50, true], ["夕方", 60, true]],
+  );
+});
+
+test("降水確率: データがない時間帯は null（0% と区別する）", () => {
+  const hours = [{ hour: 7, precipProb: null }, { hour: 12, precipProb: 0 }];
+  assert.deepEqual(precipByBlock(hours).map((b) => b.prob), [null, 0, null]);
+});
+
+test("降水確率の時間帯は、日中の判定時間（7〜18 時）をすき間なく覆う", () => {
+  const covered = PRECIP_BLOCKS.flatMap((b) => Array.from({ length: b.to - b.from + 1 }, (_, i) => b.from + i));
+  assert.deepEqual(covered, Array.from({ length: 12 }, (_, i) => 7 + i));
+});

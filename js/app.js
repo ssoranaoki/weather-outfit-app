@@ -1,5 +1,5 @@
 // 画面の組み立て。判定は rules.js、データ取得は weather.js に任せる
-import { dayAdvice, pajamaAdvice, decideMode, addDays } from "./rules.js";
+import { dayAdvice, pajamaAdvice, decideMode, addDays, precipByBlock } from "./rules.js";
 import { fetchForecast, searchPlaces, currentPlace, daytimeRows, nightRows } from "./weather.js";
 import { loadSettings, saveSettings, SENSITIVITY_CHOICES } from "./settings.js";
 import { RATINGS, loadFeedback, saveFeedback, upsertRecord, findRecord, toCsv } from "./feedback.js";
@@ -153,6 +153,17 @@ async function onAiAction(e) {
 
 const credit = `<p class="credit">天気データ: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>（CC BY 4.0）<br><a href="llms.txt">AI で使う方へ（llms.txt）</a></p>`;
 
+// 時間帯ごとの降水確率（洗濯物を外に干せるかの目安）
+function precipHtml(hours, title) {
+  const cells = precipByBlock(hours)
+    .map(
+      (b) =>
+        `<div class="precip-cell${b.high ? " high" : ""}"><span>${b.label}<small>${b.from}〜${b.to}時</small></span><b>${b.prob === null ? "-" : `${b.prob}%`}</b></div>`,
+    )
+    .join("");
+  return `<div class="precip" role="group" aria-label="${esc(title)}"><div class="precip-title">☂ ${esc(title)}</div><div class="precip-row">${cells}</div></div>`;
+}
+
 function renderDay(rows, target) {
   const a = dayAdvice(daytimeRows(rows, target), settings.sensitivity);
   return `
@@ -161,6 +172,7 @@ function renderDay(rows, target) {
     <div class="big">${esc(a.headline)}</div>
     ${itemsHtml(a.items)}
     ${statsHtml([["体感 最高", `${a.stats.max}℃`], ["体感 最低", `${a.stats.min}℃`], ["湿度", `${a.stats.humidity}%`]])}
+    ${precipHtml(daytimeRows(rows, target), "今日の降水確率")}
     ${notesHtml(a.notes)}
     ${lastNightFeedback(rows, target)}`;
 }
@@ -206,6 +218,7 @@ function renderNight(rows, target) {
     <div class="big sub">${esc(a.headline)}</div>
     ${itemsHtml(a.items)}
     ${statsHtml(cells)}
+    ${precipHtml(daytimeRows(rows, target), "明日の降水確率")}
     ${notesHtml(a.notes)}
     ${todayFeedback(rows, target)}`;
 }

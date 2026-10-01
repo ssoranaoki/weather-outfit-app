@@ -56,3 +56,11 @@ test("catalog.json の寒がり度: 値ごとの補正が判定と同じ向き�
   for (const c of ch) assert.equal(c.judgeShiftCelsius, -c.value * SENSITIVITY_STEP + 0); // +0 で -0 を 0 にそろえる
   assert.ok(ch.find((c) => c.label === "かなり寒がり").judgeShiftCelsius < 0);
 });
+
+import { PRECIP_BLOCKS } from "../js/rules.js";
+
+test("llms.txt と catalog.json に、アプリと同じ降水確率の時間帯が載っている", () => {
+  const txt = buildLlmsTxt();
+  for (const b of PRECIP_BLOCKS) assert.ok(txt.includes(`${b.label}（${b.from}〜${b.to}時）`), `${b.label} がない`);
+  assert.deepEqual(buildCatalog().rules.precipBlocks, PRECIP_BLOCKS);
+});

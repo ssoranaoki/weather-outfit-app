@@ -95,6 +95,19 @@ button.item:focus-visible { outline: 3px solid var(--accent); outline-offset: 2p
 .stats span { color: var(--muted); }
 .stats b { display: block; font-size: 22px; }
 
+/* 時間帯ごとの降水確率 */
+.precip { margin-bottom: 14px; }
+.precip-title { font-size: 15px; font-weight: bold; margin-bottom: 6px; }
+.precip-row { display: flex; gap: 8px; }
+.precip-cell {
+  flex: 1; border-radius: 12px; padding: 6px; text-align: center; font-size: 14px;
+  background: var(--card); border: 1px solid var(--card-line);
+}
+.precip-cell small { display: block; font-size: 11px; color: var(--muted); }
+.precip-cell b { display: block; font-size: 22px; }
+/* 50% 以上は枠を太く・色付きに（色だけに頼らず太さでも区別する） */
+.precip-cell.high { border: 3px solid var(--accent); }
+
 .notes { list-style: none; margin-bottom: 14px; }
 .notes li { font-size: 17px; line-height: 1.7; border-radius: 14px; padding: 10px 13px; margin-bottom: 8px; background: var(--note); }
 
