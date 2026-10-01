@@ -11,6 +11,8 @@ import {
 
 export const BASE_URL = "https://ssoranaoki.github.io/weather-outfit-app/";
 const REPO_URL = "https://github.com/ssoranaoki/weather-outfit-app";
+// GitHub Pages を読めない AI 向けの予備（公開直後の 404 キャッシュ等。claude.ai ではこちらで読めた）
+const RAW_URL = "https://raw.githubusercontent.com/ssoranaoki/weather-outfit-app/main/";
 const T_MIN = -20;
 const T_MAX = 45;
 
@@ -160,6 +162,7 @@ ${items}
 ## Files
 
 - [catalog.json](${BASE_URL}catalog.json): 判定ルールの数値と服カタログ（機械可読）
+- [llms.txt の予備の取得先](${RAW_URL}llms.txt) / [catalog.json の予備](${RAW_URL}catalog.json): 上の URL が読めないとき用（GitHub のリポジトリから直接）
 - [アプリ本体](${BASE_URL}): 人が使う画面（AIを持たない人も同じ判定を見られる）
 - [判定ルールのソース](${REPO_URL}/blob/main/js/rules.js): この文書の生成元
 

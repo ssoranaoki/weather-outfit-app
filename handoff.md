@@ -28,7 +28,8 @@
 
 - AI 連携 案1: `llms.txt` と `catalog.json` を rules.js から生成（`tools/build-llms.mjs`）
   - 説明書だけで判定した結果とアプリの判定を、実データ 4 地域・48 件で突き合わせて全件一致
-  - ユーザーが自分の ChatGPT / Claude で試すのはこれから
+  - claude.ai で試した: GitHub Pages の URL は 404（公開直後に試した可能性が高い）、raw.githubusercontent.com の URL では読めた
+  - llms.txt に予備の取得先（raw URL）を記載。Claude の答えとアプリの判定の一致はユーザー確認待ち
 
 - 公開後に古い版が残る問題を修正（sw.js v2）
   - 原因: GitHub Pages の cache-control: max-age=600 を、SW のネット優先取得が素通りしていなかった

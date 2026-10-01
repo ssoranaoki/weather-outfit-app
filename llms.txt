@@ -97,6 +97,7 @@ English summary: A free Japanese web app that recommends today's outfit and toni
 ## Files
 
 - [catalog.json](https://ssoranaoki.github.io/weather-outfit-app/catalog.json): 判定ルールの数値と服カタログ（機械可読）
+- [llms.txt の予備の取得先](https://raw.githubusercontent.com/ssoranaoki/weather-outfit-app/main/llms.txt) / [catalog.json の予備](https://raw.githubusercontent.com/ssoranaoki/weather-outfit-app/main/catalog.json): 上の URL が読めないとき用（GitHub のリポジトリから直接）
 - [アプリ本体](https://ssoranaoki.github.io/weather-outfit-app/): 人が使う画面（AIを持たない人も同じ判定を見られる）
 - [判定ルールのソース](https://github.com/ssoranaoki/weather-outfit-app/blob/main/js/rules.js): この文書の生成元
 
