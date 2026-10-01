@@ -153,6 +153,13 @@ function renderNight(rows, target) {
     ${todayFeedback(rows, target)}`;
 }
 
+// 電波がなく、前回取得した天気で表示しているときの案内
+function staleHtml(savedAt) {
+  const d = new Date(savedAt);
+  const when = `${d.getMonth() + 1}月${d.getDate()}日 ${d.getHours()}時${String(d.getMinutes()).padStart(2, "0")}分`;
+  return `<p class="stale" role="status">📡 電波がないため、${when}時点の天気で表示しています</p>`;
+}
+
 async function render() {
   if (!settings.place) {
     app.innerHTML = `<p class="loading">はじめに、お住まいの地域を設定してください。</p>`;
@@ -163,9 +170,11 @@ async function render() {
   document.body.className = mode;
   pendingRecords = {};
   try {
-    const rows = await fetchForecast(settings.place.latitude, settings.place.longitude);
+    const { rows, savedAt, stale } = await fetchForecast(settings.place.latitude, settings.place.longitude);
+    // 保存が古すぎて対象日の予報を含まない（何日も電波がなかった等）ときは、出せる情報がない
+    if (!daytimeRows(rows, target).length) throw new Error("最新の天気を取得できませんでした");
     const html = mode === "day" ? renderDay(rows, target) : renderNight(rows, target);
-    app.innerHTML = html + credit;
+    app.innerHTML = (stale ? staleHtml(savedAt) : "") + html + credit;
   } catch (e) {
     app.innerHTML = `<p class="error">${esc(e.message)}<br>電波の良いところで開き直してください。</p>`;
   }
@@ -282,3 +291,10 @@ document.getElementById("sensitivity-choices").addEventListener("change", (e) =>
 dialog.addEventListener("close", render);
 
 render();
+
+// ホーム画面に追加（PWA）用。HTTPS か localhost でのみ登録できる
+if ("serviceWorker" in navigator && window.isSecureContext) {
+  navigator.serviceWorker.register("./sw.js").catch(() => {
+    /* 登録できなくても通常のページとして動く */
+  });
+}

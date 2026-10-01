@@ -15,6 +15,7 @@ AI native 設計（AI は利用者側に置く）。バイブコーディング�
 - `js/zoom.js` 服のカードをタップしたときの中央拡大表示（FLIP アニメーション）
 - `tests/` ルールのテスト（`npm test`）
 - `img/clothes/` 服カタログ画像（生成条件は同フォルダの README.md）
+- `manifest.webmanifest` / `sw.js` / `img/icons/` ホーム画面に追加（PWA）とオフライン表示
 - `tools/ui-smoke.mjs` ブラウザなしで画面の組み立てを確認するスクリプト
 
 ## 方針

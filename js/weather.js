@@ -89,12 +89,29 @@ export function currentPlace() {
   });
 }
 
-/** 予報を取得（前日〜2日後の 1 時間ごと）。30 分以内の同一地点はキャッシュを返す */
+/**
+ * 予報を取得（前日〜2日後の 1 時間ごと）。
+ * 戻り値: { rows, savedAt（取得した時刻 ms）, stale（電波がなく前回の保存を使ったら true） }
+ * - 30 分以内の同一地点は保存した結果をそのまま返す
+ * - 取得に失敗したら、古くても同一地点の保存があればそれを返す（オフライン対応）
+ */
 export async function fetchForecast(lat, lon) {
   const key = `${lat.toFixed(2)},${lon.toFixed(2)}`;
   const cached = readCache(key);
-  if (cached) return cached;
+  if (cached && Date.now() - cached.savedAt < CACHE_MINUTES * 60 * 1000) {
+    return { rows: cached.rows, savedAt: cached.savedAt, stale: false };
+  }
+  try {
+    const rows = await requestForecast(lat, lon);
+    const savedAt = writeCache(key, rows);
+    return { rows, savedAt, stale: false };
+  } catch (e) {
+    if (cached) return { rows: cached.rows, savedAt: cached.savedAt, stale: true };
+    throw e;
+  }
+}
 
+async function requestForecast(lat, lon) {
   const url = new URL(FORECAST_URL);
   url.search = new URLSearchParams({
     latitude: String(lat),
@@ -117,7 +134,6 @@ export async function fetchForecast(lat, lon) {
     humidity: h.relative_humidity_2m[i],
     precipProb: h.precipitation_probability[i],
   }));
-  writeCache(key, rows);
   return rows;
 }
 
@@ -136,20 +152,23 @@ export function nightRows(rows, dateKey) {
   );
 }
 
+/** 同一地点の保存（古さは問わない）。無ければ null */
 function readCache(key) {
   try {
     const c = JSON.parse(localStorage.getItem(CACHE_KEY));
-    if (c && c.key === key && Date.now() - c.savedAt < CACHE_MINUTES * 60 * 1000) return c.rows;
+    if (c && c.key === key && Array.isArray(c.rows)) return c;
   } catch {
-    /* 壊れたキャッシュは無視して取り直す */
+    /* 壊れた保存は無視して取り直す */
   }
   return null;
 }
 
 function writeCache(key, rows) {
+  const savedAt = Date.now();
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ key, savedAt: Date.now(), rows }));
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ key, savedAt, rows }));
   } catch {
     /* 容量不足などは無視（毎回取得になるだけ） */
   }
+  return savedAt;
 }

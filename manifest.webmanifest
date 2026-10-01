@@ -1,0 +1,17 @@
+{
+  "name": "きょうの服装",
+  "short_name": "きょうの服装",
+  "description": "天気予報から、今日の服装と今夜の寝間着をアドバイスします",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff7e0",
+  "theme_color": "#fff7e0",
+  "icons": [
+    { "src": "img/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "img/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "img/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

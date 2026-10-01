@@ -33,6 +33,7 @@ body.night {
 }
 
 .screen { max-width: 480px; margin: 0 auto; padding: 20px 18px 40px; }
+.stale { font-size: 15px; line-height: 1.6; padding: 8px 12px; margin-bottom: 12px; border-radius: 12px; background: var(--note); }
 .loading, .error { padding: 40px 0; text-align: center; font-size: 18px; }
 .error { color: var(--accent); }
 
