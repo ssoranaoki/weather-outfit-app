@@ -3,6 +3,7 @@ import { dayAdvice, pajamaAdvice, decideMode, addDays } from "./rules.js";
 import { fetchForecast, searchPlaces, currentPlace, daytimeRows, nightRows } from "./weather.js";
 import { loadSettings, saveSettings, SENSITIVITY_CHOICES } from "./settings.js";
 import { RATINGS, loadFeedback, saveFeedback, upsertRecord, findRecord, toCsv } from "./feedback.js";
+import { openZoom } from "./zoom.js";
 
 const app = document.getElementById("app");
 const dialog = document.getElementById("settings");
@@ -32,24 +33,18 @@ const itemImg = (i) =>
     ? `<img src="img/clothes/${i.id}.jpg" alt="" width="200" height="200" loading="lazy" onerror="this.replaceWith(document.createTextNode('${i.icon}'))">`
     : i.icon;
 
-// 服のカードはタップで浮き上がるボタン（もう一度タップで戻る。同時に浮くのは 1 枚だけ）
+// 服のカードはタップで画面中央に拡大表示するボタン（処理は zoom.js）
 const itemsHtml = (items) =>
   `<div class="coord">${items
-    .map((i) => `<button type="button" class="item" aria-pressed="false">${itemImg(i)}<small>${esc(i.label)}</small></button>`)
+    .map(
+      (i) =>
+        `<button type="button" class="item" aria-haspopup="dialog" aria-expanded="false">${itemImg(i)}<small>${esc(i.label)}</small></button>`,
+    )
     .join("")}</div>`;
 
 function onItemTap(e) {
   const card = e.target.closest("button.item");
-  if (!card) return;
-  const lift = !card.classList.contains("lifted");
-  app.querySelectorAll("button.item.lifted").forEach((c) => {
-    c.classList.remove("lifted");
-    c.setAttribute("aria-pressed", "false");
-  });
-  if (lift) {
-    card.classList.add("lifted");
-    card.setAttribute("aria-pressed", "true");
-  }
+  if (card) openZoom(card);
 }
 
 const notesHtml = (notes) => (notes.length ? `<ul class="notes">${notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : "");
