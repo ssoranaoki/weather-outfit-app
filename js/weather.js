@@ -99,7 +99,10 @@ export function currentPlace() {
 export async function fetchForecast(lat, lon) {
   const key = `${lat.toFixed(2)},${lon.toFixed(2)}`;
   const cached = readCache(key);
-  if (cached && Date.now() - cached.savedAt < CACHE_MINUTES * 60 * 1000) {
+  // 天気コード（code）を取り始める前の古い形式の保存は、30 分以内でも取り直す（天気アイコンが出ないため）。
+  // 電波がないときの予備としては、下の catch で引き続き使う
+  const currentFormat = cached?.rows?.length && "code" in cached.rows[0];
+  if (cached && currentFormat && Date.now() - cached.savedAt < CACHE_MINUTES * 60 * 1000) {
     return { rows: cached.rows, savedAt: cached.savedAt, stale: false };
   }
   try {

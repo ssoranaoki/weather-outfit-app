@@ -35,7 +35,7 @@ test("サービスワーカーが js/ のすべてのファイルを保存対象
   const sw = read("sw.js");
   const files = [
     ...readdirSync(new URL("js/", root)).filter((f) => f.endsWith(".js")),
-    ...readdirSync(new URL("js/vendor/", root)).map((f) => `vendor/${f}`), // 同梱ライブラリ（Anime.js 等）
+    ...readdirSync(new URL("js/vendor/", root)).filter((f) => f.endsWith(".js")).map((f) => `vendor/${f}`), // 同梱ライブラリ（Anime.js 等）。README.md は対象外
   ];
   for (const f of files) assert.ok(sw.includes(`"./js/${f}"`), `js/${f} が sw.js の SHELL にない`);
 });
