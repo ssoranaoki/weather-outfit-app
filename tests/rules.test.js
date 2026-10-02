@@ -122,3 +122,33 @@ test("降水確率の時間帯は、日中の判定時間（7〜18 時）をす�
   const covered = PRECIP_BLOCKS.flatMap((b) => Array.from({ length: b.to - b.from + 1 }, (_, i) => b.from + i));
   assert.deepEqual(covered, Array.from({ length: 12 }, (_, i) => 7 + i));
 });
+
+import { weatherKind } from "../js/rules.js";
+
+const codesDay = (codes) => codes.map((code, i) => ({ hour: 7 + i, code }));
+
+test("天気の種類: 晴れ・くもり・雨・雪", () => {
+  assert.equal(weatherKind(codesDay([0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0])), "clear");
+  assert.equal(weatherKind(codesDay([3, 3, 3, 2, 3, 3, 3, 1, 0, 3, 3, 3])), "cloudy");
+  assert.equal(weatherKind(codesDay([3, 3, 61, 63, 61, 3, 3, 3, 3, 3, 3, 3])), "rain");
+  assert.equal(weatherKind(codesDay([3, 71, 73, 3, 61, 63, 3, 3, 3, 3, 3, 3])), "snow"); // 雪と雨が混じる日は雪を優先
+});
+
+test("天気の種類: 雨が 1 時間だけなら雨にしない（にわか雨で傘マークにならない）", () => {
+  assert.equal(weatherKind(codesDay([0, 0, 0, 80, 0, 0, 0, 0, 0, 0, 0, 0])), "clear");
+});
+
+test("天気の種類: 天気コードがない（古い保存）ならアイコンなし", () => {
+  assert.equal(weatherKind(codesDay([null, null])), null);
+  assert.equal(weatherKind([]), null);
+});
+
+import { weatherBadgeHtml } from "../js/weather-icon.js";
+
+test("天気アイコン: 種類ごとに動かす部品が入り、ラベルが読み上げ用にも付く", () => {
+  assert.match(weatherBadgeHtml("clear", "今日は"), /class="sun-rays"[\s\S]*aria-label|aria-label="今日は晴れ"[\s\S]*class="sun-rays"/);
+  assert.equal((weatherBadgeHtml("rain").match(/class="drop"/g) ?? []).length, 3);
+  assert.equal((weatherBadgeHtml("snow").match(/class="flake"/g) ?? []).length, 3);
+  assert.match(weatherBadgeHtml("cloudy", "明日は"), /<span>明日はくもり<\/span>/);
+  assert.equal(weatherBadgeHtml(null), ""); // 天気コードがないときはアイコンなし
+});

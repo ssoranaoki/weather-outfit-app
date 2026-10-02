@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>動きの確認（天気アイコン・開いたときの動き）</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .icons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 16px 0 24px; }
+    .icons > div { background: var(--card); border: 1px solid var(--card-line); border-radius: 14px; padding: 10px; }
+    h2 { font-size: 18px; margin: 18px 0 8px; }
+    .replay { width: 100%; margin-top: 10px; }
+  </style>
+</head>
+<body class="day">
+  <main class="screen">
+    <h1 style="font-size:22px">動きの確認ページ</h1>
+    <p class="muted" style="font-size:14px">アプリ本体と同じ js/motion.js・js/weather-icon.js を使っています。</p>
+
+    <h2>天気アイコン（4種類）</h2>
+    <div class="icons" id="icons"></div>
+
+    <h2>開いたときの動き</h2>
+    <div id="sample">
+      <div class="label">今日の服装</div>
+      <div class="big">長袖にうすい上着を。昼は脱いでOK</div>
+      <div class="coord">
+        <button type="button" class="item"><img src="../img/clothes/outer-light.jpg" alt=""><small>うすい上着</small></button>
+        <button type="button" class="item"><img src="../img/clothes/top-long.jpg" alt=""><small>長袖</small></button>
+        <button type="button" class="item"><img src="../img/clothes/bottom-pants.jpg" alt=""><small>長ズボン</small></button>
+      </div>
+    </div>
+    <button type="button" class="ai-btn replay" id="replay">もう一度見る</button>
+    <button type="button" class="ai-btn replay" id="theme">夜の画面に切り替え</button>
+  </main>
+
+  <script type="module">
+    import { weatherBadgeHtml } from "../js/weather-icon.js";
+    import { playEntrance, playWeatherIcon } from "../js/motion.js";
+
+    const icons = document.getElementById("icons");
+    icons.innerHTML = ["clear", "cloudy", "rain", "snow"].map((k) => `<div>${weatherBadgeHtml(k, "今日は")}</div>`).join("");
+    playWeatherIcon(icons);
+
+    const sample = document.getElementById("sample");
+    playEntrance(sample);
+    document.getElementById("replay").addEventListener("click", () => playEntrance(sample));
+    document.getElementById("theme").addEventListener("click", (e) => {
+      const night = document.body.classList.toggle("night");
+      document.body.classList.toggle("day", !night);
+      e.target.textContent = night ? "朝の画面に切り替え" : "夜の画面に切り替え";
+    });
+  </script>
+</body>
+</html>

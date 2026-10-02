@@ -13,7 +13,14 @@ const el = (id) =>
     id, innerHTML: "", textContent: "", value: "", disabled: false, open: false,
     addEventListener: (t, fn) => (handlers[`${id}:${t}`] ??= []).push(fn),
     showModal() { this.open = true; },
+    querySelectorAll: () => [], // Anime.js で動かす要素の検索（簡易環境では動かす対象なし）
+    querySelector: () => null,
   });
+// 「動きを減らす」設定なし（Anime.js を通る経路を確かめる）
+globalThis.window = { matchMedia: () => ({ matches: false }), isSecureContext: false };
+// Anime.js がブラウザだと判断して使う描画タイマー
+globalThis.requestAnimationFrame = (cb) => setTimeout(() => cb(performance.now()), 16);
+globalThis.cancelAnimationFrame = (id) => clearTimeout(id);
 globalThis.document = { getElementById: el, body: { className: "" }, createElement: () => ({ click() {} }), addEventListener() {}, querySelector: () => null, visibilityState: "visible" };
 let shared = null;
 let copied = null;
@@ -44,6 +51,7 @@ const html = els.app.innerHTML;
 const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
 console.log(`[hour=${hour}] mode=${document.body.className}`);
 console.log(text.slice(0, 400));
+console.log("天気アイコン:", html.match(/class="weather-badge" data-kind="(\w+)"/)?.[1] ?? "なし", "|", html.match(/aria-label="([^"]+)" overflow/)?.[1] ?? "");
 console.log("画像:", [...html.matchAll(/img src="([^"]+)"/g)].map((m) => m[1]).join(" ") || "なし");
 
 const m = html.match(/data-kind="(\w+)" data-rating="cold"/);
@@ -99,3 +107,4 @@ handlers["open-settings:click"]?.forEach((fn) => fn());
 for (const fn of handlers["export-feedback:click"]) await fn();
 console.log("書き出し:", els["export-status"].textContent);
 console.log(shared?.text);
+process.exit(0); // Anime.js の描画タイマーが残っても終わるように

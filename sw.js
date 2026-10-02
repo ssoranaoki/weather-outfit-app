@@ -6,7 +6,7 @@
 // - 他サイト（天気・住所検索 API）: 触らない。オフライン時の扱いは weather.js が担う
 // 保存するファイルの一覧を変えたら CACHE_VERSION を上げる（古い保存を消すため）
 
-const CACHE_VERSION = "wo-v4";
+const CACHE_VERSION = "wo-v5";
 
 const SHELL = [
   "./",
@@ -22,6 +22,9 @@ const SHELL = [
   "./js/ai-prompt.js",
   "./js/ai-ask.js",
   "./js/html.js",
+  "./js/weather-icon.js",
+  "./js/motion.js",
+  "./js/vendor/anime.esm.min.js",
   "./img/icons/icon-192.png",
   "./img/icons/apple-touch-icon.png",
   ...[

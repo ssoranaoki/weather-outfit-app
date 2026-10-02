@@ -1,5 +1,7 @@
 // 画面の組み立て。判定は rules.js、データ取得は weather.js に任せる
-import { dayAdvice, pajamaAdvice, decideMode, addDays, precipByBlock } from "./rules.js";
+import { dayAdvice, pajamaAdvice, decideMode, addDays, precipByBlock, weatherKind } from "./rules.js";
+import { weatherBadgeHtml } from "./weather-icon.js";
+import { playEntrance, playWeatherIcon, stopLoops } from "./motion.js";
 import { fetchForecast, searchPlaces, currentPlace, daytimeRows, nightRows } from "./weather.js";
 import { loadSettings, saveSettings, SENSITIVITY_CHOICES } from "./settings.js";
 import { RATINGS, loadFeedback, saveFeedback, upsertRecord, findRecord, toCsv } from "./feedback.js";
@@ -112,6 +114,7 @@ function renderDay(rows, target) {
   const a = dayAdvice(daytimeRows(rows, target), settings.sensitivity);
   return `
     ${topHtml(formatDate(target))}
+    ${weatherBadgeHtml(weatherKind(daytimeRows(rows, target)), "今日は")}
     <div class="label">今日の服装</div>
     <div class="big">${esc(a.headline)}</div>
     ${itemsHtml(a.items)}
@@ -158,6 +161,7 @@ function renderNight(rows, target) {
     ${itemsHtml([p.item])}
     ${notesHtml([`明け方は ${p.min}℃ まで下がります`, ...p.notes])}
     <div class="sep"></div>
+    ${weatherBadgeHtml(weatherKind(daytimeRows(rows, target)), "明日は")}
     <div class="label">明日の服装</div>
     <div class="big sub">${esc(a.headline)}</div>
     ${itemsHtml(a.items)}
@@ -174,6 +178,8 @@ function staleHtml(savedAt) {
   return `<p class="stale" role="status">📡 電波がないため、${when}時点の天気で表示しています</p>`;
 }
 
+let lastViewKey = "";
+
 async function render() {
   if (!settings.place) {
     app.innerHTML = `<p class="loading">はじめに、お住まいの地域を設定してください。</p>`;
@@ -188,8 +194,15 @@ async function render() {
     // 保存が古すぎて対象日の予報を含まない（何日も電波がなかった等）ときは、出せる情報がない
     if (!daytimeRows(rows, target).length) throw new Error("最新の天気を取得できませんでした");
     const html = mode === "day" ? renderDay(rows, target) : renderNight(rows, target);
+    stopLoops(); // 消える天気アイコンの動きを止めてから描き直す
     app.innerHTML = (stale ? staleHtml(savedAt) : "") + html + aiAskHtml({ mode, rows, target, savedAt, settings }) + credit;
+    playWeatherIcon(app);
+    // 開いたときの動きは、表示する日・朝夜が変わったときだけ（画面に戻るたびに動くとうるさいため）
+    const viewKey = `${mode}:${target}`;
+    if (viewKey !== lastViewKey) playEntrance(app);
+    lastViewKey = viewKey;
   } catch (e) {
+    stopLoops();
     app.innerHTML = `<p class="error">${esc(e.message)}<br>電波の良いところで開き直してください。</p>`;
   }
   document.getElementById("open-settings")?.addEventListener("click", openSettings);

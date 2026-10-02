@@ -137,6 +137,30 @@ export function precipByBlock(hours) {
   });
 }
 
+// ---- 天気の種類（画面上部のアイコン用） ----
+// WMO 天気コード（Open-Meteo の weather_code）: https://open-meteo.com/en/docs
+const SNOW_CODES = new Set([71, 73, 75, 77, 85, 86]);
+const RAIN_CODES = new Set([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 97, 99]);
+const CLOUD_CODES = new Set([2, 3, 45, 48]); // 晴れ時々くもり・くもり・霧
+const WEATHER_MIN_HOURS = 2; // 雨・雪は日中に 2 時間以上あれば、その日の天気とみなす
+
+export const WEATHER_LABELS = { clear: "晴れ", cloudy: "くもり", rain: "雨", snow: "雪" };
+
+/**
+ * 日中の天気を 1 つにまとめる。雪 > 雨 > くもり > 晴れ の順に優先
+ * @param {Array<{code:number|null}>} hours 対象日の 7〜18 時
+ * @returns {"clear"|"cloudy"|"rain"|"snow"|null} 天気コードがなければ null（アイコンを出さない）
+ */
+export function weatherKind(hours) {
+  const codes = hours.map((h) => h.code).filter((c) => c !== null && c !== undefined);
+  if (!codes.length) return null;
+  const count = (set) => codes.filter((c) => set.has(c)).length;
+  if (count(SNOW_CODES) >= WEATHER_MIN_HOURS) return "snow";
+  if (count(RAIN_CODES) >= WEATHER_MIN_HOURS) return "rain";
+  if (count(CLOUD_CODES) > codes.length / 2) return "cloudy";
+  return "clear";
+}
+
 // ---- 寝間着 ----
 
 export function pajamaBand(minTemp) {

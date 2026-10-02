@@ -33,5 +33,9 @@ test("サービスワーカーの服画像リストが服カタログと一致�
 test("サービスワーカーが js/ のすべてのファイルを保存対象にしている", async () => {
   const { readdirSync } = await import("node:fs");
   const sw = read("sw.js");
-  for (const f of readdirSync(new URL("js/", root))) assert.ok(sw.includes(`"./js/${f}"`), `js/${f} が sw.js の SHELL にない`);
+  const files = [
+    ...readdirSync(new URL("js/", root)).filter((f) => f.endsWith(".js")),
+    ...readdirSync(new URL("js/vendor/", root)).map((f) => `vendor/${f}`), // 同梱ライブラリ（Anime.js 等）
+  ];
+  for (const f of files) assert.ok(sw.includes(`"./js/${f}"`), `js/${f} が sw.js の SHELL にない`);
 });

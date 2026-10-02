@@ -15,6 +15,7 @@ AI native 設計（AI は利用者側に置く）。バイブコーディング�
 - `js/ai-ask.js` 「自分の AI に聞く」欄（コピー・共有・着せ替えの画像共有）。写真は端末内だけで扱う
 - `js/html.js` HTML エスケープ（共通）
 - `js/ai-prompt.js` 「自分の AI に聞く」のプロンプト組み立て（端末内の地域・寒がり度を書き込む）
+- `js/motion.js` / `js/weather-icon.js` Anime.js による動き（開いたとき・天気アイコン）。Anime.js は `js/vendor/` に同梱
 - `js/zoom.js` 服のカードをタップしたときの中央拡大表示（FLIP アニメーション）
 - `tests/` ルールのテスト（`npm test`）
 - `img/clothes/` 服カタログ画像（生成条件は同フォルダの README.md）

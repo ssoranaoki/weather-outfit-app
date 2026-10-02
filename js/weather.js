@@ -8,7 +8,8 @@ const GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
 const CACHE_KEY = "wo:forecast";
 const CACHE_MINUTES = 30; // 同じ地点の予報を使い回す時間（API 呼び出し回数を抑える）
 
-const HOURLY = ["temperature_2m", "apparent_temperature", "relative_humidity_2m", "precipitation_probability"];
+// weather_code は WMO の天気コード（晴れ・雨・雪のアイコン用）
+const HOURLY = ["temperature_2m", "apparent_temperature", "relative_humidity_2m", "precipitation_probability", "weather_code"];
 
 // 国土地理院の住所検索（地理院地図用の機能。長期提供の保証がなく、予告なく仕様が変わりうる）
 // 日本の町名・大字まで引けるため優先して使うが、失敗しても Open-Meteo の結果だけで動くようにする
@@ -133,6 +134,7 @@ async function requestForecast(lat, lon) {
     apparent: h.apparent_temperature[i],
     humidity: h.relative_humidity_2m[i],
     precipProb: h.precipitation_probability[i],
+    code: h.weather_code?.[i] ?? null, // 古い保存（天気コードなし）でも動くように
   }));
   return rows;
 }

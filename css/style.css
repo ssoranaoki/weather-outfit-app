@@ -95,6 +95,14 @@ button.item:focus-visible { outline: 3px solid var(--accent); outline-offset: 2p
 .stats span { color: var(--muted); }
 .stats b { display: block; font-size: 22px; }
 
+/* 天気アイコン（動きは motion.js / Anime.js） */
+.weather-badge { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 17px; font-weight: bold; }
+.weather-badge svg { flex: none; }
+/* SVG の部品を自分の中心で回す・動かす */
+.weather-badge .sun-rays, .weather-badge .cloud, .weather-badge .drop, .weather-badge .flake {
+  transform-box: fill-box; transform-origin: center;
+}
+
 /* 時間帯ごとの降水確率 */
 .precip { margin-bottom: 14px; }
 .precip-title { font-size: 15px; font-weight: bold; margin-bottom: 6px; }
