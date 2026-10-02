@@ -182,3 +182,13 @@ fieldset { border: none; margin-bottom: 14px; }
 .export { margin-bottom: 14px; }
 .export button { width: 100%; }
 .export-status { font-size: 14px; color: #1a7f37; margin-top: 6px; }
+/* AI に寒がり度を見てもらう（設定画面は白背景） */
+#ai-sensitivity .ai-actions button { flex: 1; }
+#ai-sensitivity > button { width: 100%; margin-top: 6px; }
+.sens-paste-label { margin-top: 10px; }
+.sens-answer { width: 100%; font: inherit; font-size: 15px; padding: 8px; border: 1px solid #d0d7de; border-radius: 10px; }
+.sens-result p { font-size: 14px; margin-top: 6px; line-height: 1.6; }
+.sens-ok { color: #1a7f37; }
+.sens-ng { color: #b42318; }
+.sens-proposal { margin-top: 8px; padding: 10px; border-radius: 12px; background: #f6f8fa; border: 1px solid #d0d7de; }
+.sens-change { font-size: 17px !important; font-weight: bold; }

@@ -16,6 +16,7 @@ AI native 設計（AI は利用者側に置く）。バイブコーディング�
 - `js/html.js` HTML エスケープ（共通）
 - `js/ai-prompt.js` 「自分の AI に聞く」のプロンプト組み立て（端末内の地域・寒がり度を書き込む）
 - `js/motion.js` / `js/weather-icon.js` Anime.js による動き（開いたとき・天気アイコン）。Anime.js は `js/vendor/` に同梱
+- `js/sensitivity-advice.js` / `js/sensitivity-ui.js` 記録を利用者の AI に分析してもらい、寒がり度の提案を受け取る（返答の形を決め、5段階の言葉だけ受け入れる）
 - `js/zoom.js` 服のカードをタップしたときの中央拡大表示（FLIP アニメーション）
 - `tests/` ルールのテスト（`npm test`）
 - `img/clothes/` 服カタログ画像（生成条件は同フォルダの README.md）

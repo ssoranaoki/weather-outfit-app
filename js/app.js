@@ -8,6 +8,7 @@ import { RATINGS, loadFeedback, saveFeedback, upsertRecord, findRecord, toCsv } 
 import { openZoom } from "./zoom.js";
 import { aiAskHtml, attachAiAsk } from "./ai-ask.js";
 import { esc } from "./html.js";
+import { renderSensitivityAi, attachSensitivityAi } from "./sensitivity-ui.js";
 
 const app = document.getElementById("app");
 const dialog = document.getElementById("settings");
@@ -223,6 +224,7 @@ function openSettings() {
   document.getElementById("feedback-count").textContent = count ? `いま ${count} 件の記録があります` : "まだ記録はありません";
   document.getElementById("export-feedback").disabled = count === 0;
   document.getElementById("export-status").textContent = "";
+  renderSensitivityAi(document.getElementById("ai-sensitivity"), { records: loadFeedback(), currentValue: settings.sensitivity });
   if (!dialog.open) dialog.showModal();
 }
 
@@ -312,6 +314,17 @@ document.getElementById("place-query").addEventListener("keydown", (e) => {
     doSearch();
   }
 });
+// AI の提案を本人が採用したら、寒がり度を変えて設定画面の選択も合わせる（閉じると画面も作り直される）
+attachSensitivityAi(document.getElementById("ai-sensitivity"), {
+  getCurrent: () => settings.sensitivity,
+  onAdopt: (value) => {
+    settings = { ...settings, sensitivity: value };
+    saveSettings(settings);
+    const radio = document.querySelector(`#sensitivity-choices input[value="${value}"]`);
+    if (radio) radio.checked = true;
+  },
+});
+
 document.getElementById("sensitivity-choices").addEventListener("change", (e) => {
   settings = { ...settings, sensitivity: Number(e.target.value) };
   saveSettings(settings);
